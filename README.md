@@ -1,4 +1,4 @@
-# ML Destination Dispatch — Smart Elevator System
+# ML Destination Dispatch — Smart EGCS
 
 A destination-dispatch elevator control system (AUEB Programming II group project).
 Passengers declare their destination at a floor keypad before boarding; a central
