@@ -85,34 +85,34 @@ many cars). So: read MCTS to understand the destination, but build Stage 1 with
 plain pruned search first.
 
 ================================================================
-## PART 3 — JAVA LIBRARIES: what EXISTS vs. what you BUILD
+## PART 3 — JAVA LIBRARIES: what EXISTS vs. what we BUILD
 ================================================================
 
 ### EXISTS (use these — don't reinvent)
 - **Apache Commons Math** (org.apache.commons:commons-math3) — has
   `ExponentialDistribution` and `PoissonDistribution` with `.sample()`. This gives
-  you the random draws for traffic generation directly. => Use for inter-arrival
+  the random draws for traffic generation directly. => Used for inter-arrival
   times (exponential) and batch sizes. This is your traffic-gen workhorse.
 - **java.util.Random / RandomGenerator** (built in, JDK) — enough for uniform
   draws and the thinning accept/reject test; can do exponential via
-  `-Math.log(1-rng.nextDouble())/lambda` if you don't want the Commons dependency.
+  `-Math.log(1-rng.nextDouble())/lambda` if we don't want the Commons dependency.
 - **mctreesearch4j** (JVM MCTS library, published in JOSS) — a ready MCTS
-  implementation for the JVM built around MDPs. Option FOR LATER if/when you need
-  MCTS for Stage 2/3, so you don't hand-roll the tree search.
-- **Smile** (already chosen) — general ML + HMM (smile.sequence.HMM) if/when you
+  implementation for the JVM built around MDPs. Option FOR LATER if/when we need
+  MCTS for Stage 2/3, so we don't hand-roll the tree search.
+- **Smile** (already chosen) — general ML + HMM (smile.sequence.HMM) if/when we
   do demand prediction. Has the stats tooling too.
 - **Gson** (already in the project) — JSON for the REST contracts.
-- Discrete-event simulation: you likely DON'T need a DES library — a
+- Discrete-event simulation: likely DON'T need a DES library — a
   `PriorityQueue<Event>` ordered by timestamp (standard library) IS a DES engine
   and is exactly what we described in the model. Build this yourself; it's small
   and you'll understand it fully.
 
-### BUILD YOURSELF (these are the project — and the point)
+### BUILD FROM SCRATCH
 - The DISCRETE-EVENT ENGINE: a `PriorityQueue<Event>` loop (poll earliest, jump
   clock, handle, maybe schedule new events). ~ the pattern from the dissected repo.
 - The NHPP TRAFFIC GENERATOR: thinning algorithm on top of Commons Math's
   exponential sampling + a lambda(t) curve you define per scenario (up/down/lunch).
-  ~20-40 lines. Nobody will hand you an "elevator traffic generator"; you compose it.
+  ~20-40 lines. Nobody will hand  an "elevator traffic generator"; you compose it.
 - The TIMING MODEL: travel-time (accel/decel) + dwell formulas from doc 05. Pure
   arithmetic, build it.
 - The DISPATCHER: the tree/branch-and-bound search with slack pruning + deadline
