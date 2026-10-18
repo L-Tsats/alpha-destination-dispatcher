@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="900" height="560" fill="#f7f9fc"/>
+  <text x="450" y="46" text-anchor="middle" font-size="24" font-weight="700" fill="#1a2b4a">On a Floor — request, then watch the panels</text>
+
+  <!-- ===== KEYPAD ===== -->
+  <text x="190" y="110" text-anchor="middle" font-size="15" font-weight="700" fill="#b2560f">The keypad</text>
+  <rect x="100" y="130" width="180" height="250" rx="14" fill="#ffe9d6" stroke="#e07b2a" stroke-width="2.5"/>
+
+  <!-- screen -->
+  <rect x="124" y="156" width="132" height="70" rx="6" fill="#0e1f1c"/>
+  <text x="190" y="184" text-anchor="middle" font-size="14" fill="#7CFC7C" font-family="monospace">Destination: 17</text>
+  <text x="190" y="208" text-anchor="middle" font-size="14" fill="#7CFC7C" font-family="monospace">People: 2</text>
+
+  <!-- keys -->
+  <g fill="#ffffff" stroke="#e07b2a" stroke-width="1.5">
+    <rect x="128" y="244" width="36" height="30" rx="4"/><rect x="172" y="244" width="36" height="30" rx="4"/><rect x="216" y="244" width="36" height="30" rx="4"/>
+    <rect x="128" y="282" width="36" height="30" rx="4"/><rect x="172" y="282" width="36" height="30" rx="4"/><rect x="216" y="282" width="36" height="30" rx="4"/>
+  </g>
+  <g fill="#b2560f" font-size="13" text-anchor="middle" font-weight="600">
+    <text x="146" y="264">1</text><text x="190" y="264">2</text><text x="234" y="264">3</text>
+    <text x="146" y="302">4</text><text x="190" y="302">5</text><text x="234" y="302">6</text>
+  </g>
+  <!-- send -->
+  <rect x="128" y="322" width="124" height="34" rx="6" fill="#e07b2a"/>
+  <text x="190" y="344" text-anchor="middle" font-size="13" fill="#fff" font-weight="700">SEND</text>
+
+  <!-- confirm -->
+  <rect x="100" y="398" width="180" height="34" rx="6" fill="#fff4ea" stroke="#e07b2a"/>
+  <text x="190" y="420" text-anchor="middle" font-size="12.5" fill="#b2560f">✓ Request sent</text>
+  <text x="190" y="452" text-anchor="middle" font-size="11.5" fill="#8a5a2a" font-style="italic">(it does NOT tell you your car —</text>
+  <text x="190" y="468" text-anchor="middle" font-size="11.5" fill="#8a5a2a" font-style="italic">the panels will, shortly)</text>
+
+  <!-- arrow across -->
+  <text x="340" y="250" text-anchor="middle" font-size="26" fill="#9aa6b8">→</text>
+
+  <!-- ===== ELEVATOR DOORS + PANELS ===== -->
+  <text x="610" y="110" text-anchor="middle" font-size="15" font-weight="700" fill="#0f766e">Then the landing panel tells you which car</text>
+
+  <!-- CAR A: multiple requests on one panel -->
+  <g>
+    <rect x="430" y="150" width="150" height="54" rx="6" fill="#0e1f1c"/>
+    <text x="505" y="172" text-anchor="middle" font-size="14" fill="#4fe0cf" font-family="monospace">2 → 17</text>
+    <text x="505" y="194" text-anchor="middle" font-size="14" fill="#4fe0cf" font-family="monospace">1 → 12</text>
+    <rect x="430" y="210" width="150" height="230" rx="4" fill="#cfd8e3" stroke="#1aa89a" stroke-width="2"/>
+    <line x1="505" y1="210" x2="505" y2="440" stroke="#1aa89a" stroke-width="2"/>
+    <text x="505" y="464" text-anchor="middle" font-size="14" font-weight="700" fill="#0f766e">Car A</text>
+    <text x="505" y="484" text-anchor="middle" font-size="11" fill="#2a7a72">serving TWO requests</text>
+  </g>
+
+  <!-- CAR B: single request -->
+  <g>
+    <rect x="640" y="150" width="150" height="54" rx="6" fill="#0e1f1c"/>
+    <text x="715" y="183" text-anchor="middle" font-size="14" fill="#4fe0cf" font-family="monospace">3 → 8</text>
+    <rect x="640" y="210" width="150" height="230" rx="4" fill="#cfd8e3" stroke="#1aa89a" stroke-width="2"/>
+    <line x1="715" y1="210" x2="715" y2="440" stroke="#1aa89a" stroke-width="2"/>
+    <text x="715" y="464" text-anchor="middle" font-size="14" font-weight="700" fill="#0f766e">Car B</text>
+    <text x="715" y="484" text-anchor="middle" font-size="11" fill="#2a7a72">serving one request</text>
+  </g>
+
+  <text x="610" y="520" text-anchor="middle" font-size="12.5" fill="#55637a">A panel can list MULTIPLE groups — one car can pick up several requests at once (capacity permitting).</text>
+</svg>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="900" height="560" fill="#f7f9fc"/>
+  <text x="450" y="46" text-anchor="middle" font-size="24" font-weight="700" fill="#1a2b4a">Inside the Car — just one display, no buttons</text>
+
+  <!-- car shell -->
+  <rect x="250" y="90" width="400" height="380" rx="12" fill="#e6f7f5" stroke="#1aa89a" stroke-width="3"/>
+
+  <!-- next-stop display -->
+  <rect x="320" y="118" width="260" height="72" rx="8" fill="#0e1f1c"/>
+  <text x="450" y="146" text-anchor="middle" font-size="14" fill="#4fe0cf" font-family="monospace">NEXT STOP</text>
+  <text x="450" y="175" text-anchor="middle" font-size="24" fill="#7CFC7C" font-family="monospace" font-weight="700">&#9650; 17</text>
+  <text x="450" y="212" text-anchor="middle" font-size="12.5" fill="#2a7a72">the only thing shown: the next floor the car stops at</text>
+
+  <!-- riders -->
+  <g fill="#0f766e">
+    <circle cx="380" cy="300" r="20"/><rect x="366" y="322" width="28" height="50" rx="8"/>
+    <circle cx="450" cy="300" r="20"/><rect x="436" y="322" width="28" height="50" rx="8"/>
+  </g>
+  <text x="415" y="402" text-anchor="middle" font-size="12.5" fill="#2a7a72">riders know to get off when the display shows their floor</text>
+
+  <!-- doors on the right -->
+  <rect x="560" y="250" width="70" height="180" rx="4" fill="#cfd8e3" stroke="#1aa89a" stroke-width="2"/>
+  <line x1="595" y1="250" x2="595" y2="430" stroke="#1aa89a" stroke-width="2"/>
+  <text x="595" y="448" text-anchor="middle" font-size="11" fill="#2a7a72">doors (car-controlled)</text>
+
+  <!-- NO BUTTONS callout -->
+  <rect x="285" y="420" width="330" height="34" rx="6" fill="#fde8e8" stroke="#c0504d" stroke-width="1.5"/>
+  <text x="450" y="442" text-anchor="middle" font-size="13" font-weight="700" fill="#a03632">No floor buttons — you chose your floor at the keypad</text>
+
+  <text x="450" y="505" text-anchor="middle" font-size="12.5" fill="#55637a">Destination dispatch: intent is declared BEFORE boarding, so the car interior needs nothing but a "next stop" sign.</text>
+</svg>

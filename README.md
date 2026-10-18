@@ -3,7 +3,7 @@
 A destination-dispatch elevator control system (AUEB Programming II group project).
 Passengers declare their destination at a floor keypad before boarding; a central
 controller decides which car serves them and optimizes waiting time, with an
-ML-based dispatch optimizer at its core.
+MCTS-based dispatch optimizer at its core.
 
 ## System at a glance
 Four modules communicating over REST (JSON):
@@ -18,11 +18,13 @@ Four modules communicating over REST (JSON):
 See `BRIEFING/` for the full design, decisions, and diagrams.
 
 ## Build plan
-- Stage 1: 4 elevators, 40 floors, single section, no transfers (shippable).
-- Stage 2: 20 elevators, 200 floors, multiple sections with transfers.
+- Stage 1: 1 elevator, 10 floors
+- Stage 2: 4 elevators, 40 floors, no transfers.
+- Stage 3: 20 elevators, 200 floors, multiple sections with transfers.
 
 ## Tech
 - Java 21, Maven. JSON payloads over REST (Gson).
 
-## Team
-Members and task areas to be assigned.
+## CV Specification
+Because the current repo is a university project, collaborators had to use 
+their corresponding university email for the commits, for the sake of grading.
