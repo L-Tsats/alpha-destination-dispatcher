@@ -9,7 +9,7 @@
     cd ml-destination-dispatch
 
 ## Daily loop
-    git pull                        # always first
+    git pull                        # always first test
     # ... do your work ...
     git status                      # see what changed
     git add filename                # stage a file
