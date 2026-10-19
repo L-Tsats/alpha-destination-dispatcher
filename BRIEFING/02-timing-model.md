@@ -1,10 +1,11 @@
 # Timing Model — standard elevator constants + travel-time computation
 
-> These constants turn a SEQUENCE OF STOPS into a predicted TIMELINE, which is
-> what lets us compute waiting time, slack, ETAs, and the promotion deadline.
-> Values are from industry-standard sources so they're defensible/citable, not
-> invented. Field name: "elevator/lift traffic analysis"; core concept: Round
-> Trip Time (RTT). (Content rephrased from sources for licensing compliance.)
+> The choisen desing choise and the following constants turn a SEQUENCE 
+> OF STOPS into a predicted TIMELINE, which is what lets us compute waiting 
+> time, slack, ETAs, and the promotion deadline. Values are from industry-standard
+> sources so they're defensible/citable, not invented. Field name: 
+> "elevator/lift traffic analysis"; core concept: Round Trip Time (RTT). 
+> (Content rephrased from sources for licensing compliance.)
 
 ## Sources
 - Peters Research "Elevate" (industry-standard lift simulation software) door-time
@@ -80,5 +81,4 @@ optimizer). The ceiling should be:
 
 ## Open decisions to confirm
 - simultaneous (max) vs sequential (sum) passenger transfer -> lean simultaneous.
-- single combined t_door vs separate open/close -> lean combined for v1.
-- exact v for our 40-floor Stage-1 building -> ~2.5 m/s (sanity-check vs sources).
+- exact v for each Stage's building specs -> ~2.5 m/s (sanity-check vs sources).

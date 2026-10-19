@@ -2,8 +2,8 @@
 
 A destination-dispatch elevator control system (AUEB Programming II group project).
 Passengers declare their destination at a floor keypad before boarding; a central
-controller decides which car serves them and optimizes waiting time, with an
-MCTS-based dispatch optimizer at its core.
+controller decides which car serves them and optimizes waiting time, with a
+multi-car Monte Carlo Tree Search (MCTS) based dispatch optimizer (inspired by Alpha-Zero).
 
 ## System at a glance
 Four modules communicating over REST (JSON):
@@ -13,7 +13,8 @@ Four modules communicating over REST (JSON):
 | Keypad (per floor) | Takes a request (destination + how many boarding), confirms "sent". |
 | Central controller (the brain) | Tracks all cars, decides which car + where, optimizes pending time. |
 | Elevator controller (one per car) | Mechanical: moves, owns its doors, drives displays, reports status. |
-| Evaluation system | Runs traffic scenarios, measures waiting time. |
+| Evaluation/ SImulation system | Runs traffic scenarios, measures waiting time. |
+| Visual Interface | Live-scenario graphic representation of elevator movements |
 
 See `BRIEFING/` for the full design, decisions, and diagrams.
 
@@ -24,7 +25,3 @@ See `BRIEFING/` for the full design, decisions, and diagrams.
 
 ## Tech
 - Java 21, Maven. JSON payloads over REST (Gson).
-
-## CV Specification
-Because the current repo is a university project, collaborators had to use 
-their corresponding university email for the commits, for the sake of grading.

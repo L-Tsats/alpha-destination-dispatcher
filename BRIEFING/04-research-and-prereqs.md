@@ -57,11 +57,11 @@ party size / count).
 ================================================================
 
 ### What our algorithm IS, in standard terms (so papers are readable)
-- A STATE-SPACE SEARCH / branch-and-bound over stop-orderings (our tree).
+- A STATE-SPACE SEARCH / branch-and-bound over stop-orderings (tree search).
 - Run in a RECEDING-HORIZON / model-predictive way (replan, commit first step).
-- Guided by a LEARNED POLICY when the tree is too big to fully search =
+- (If need be) Guided by a LEARNED POLICY when the tree is too big to fully search =
   the MCTS + policy/value network pattern (AlphaZero family).
-- Fairness via EDF / least-laxity scheduling (our slack + deadline promotion).
+- Fairness via EDF / least-laxity scheduling.
 
 ### Reading (most useful first)
 - **Baeldung "Monte Carlo Tree Search for Tic-Tac-Toe"** (baeldung.com) — a
@@ -76,13 +76,6 @@ party size / count).
   understand the idea, just want the formal name/guarantees.)
 - Model Predictive Control (MPC) — one intro (any controls course note) to see
   the "plan-horizon, commit-first-step, replan" pattern formally.
-
-### IMPORTANT realism check
-For STAGE 1 you almost certainly do NOT need MCTS/RL at all — a small tree with
-branch-and-bound + the slack pruning is exact and fast for 1 car / 10 floors.
-MCTS + learned guidance only becomes necessary when the tree explodes (Stage 2/3,
-many cars). So: read MCTS to understand the destination, but build Stage 1 with
-plain pruned search first.
 
 ================================================================
 ## PART 3 — JAVA LIBRARIES: what EXISTS vs. what we BUILD
