@@ -13,8 +13,54 @@ Each request has:
 - **fromFloor**: origin floor
 - **destinationFloor**: destination floor
 - **boardingCount**: how many people
-- **time**: ISO-8601 timestamp of creation
+- **time**: ISO-8601 timestamp of creation (the clock origin for wait/slack/deadline)
 - **status**: WAITING → BOARDED → DELIVERED
+- **boardedTo**: carId (which car it's boarded in; null while WAITING)
+
+### Tree Search Input (RAW — stored state)
+The tree search takes only the raw state:
+- Current per-car state (destination, peopleCount, boardedIds, K)
+- All WAITING requests (origin, dest, count, time)
+- The precomputed floor-to-floor travel time table
+
+### Tree Search Derived Metrics (COMPUTED per branch, not stored)
+Everything below is a function of (raw inputs + the path taken so far). Recomputed at every node:
+- **Running clock**: accumulated travel + dwell time along the branch so far.
+- **Slack per request**: (planned pickup/delivery time) − (direct time with no detours). Spare time before this request suffers.
+- **Deadline estimate**: each request's estimated total time (wait + transit) measured from its `time`.
+- **Occupancy along the path**: peopleCount as it changes with each pickup/delivery.
+
+### Tree Search Branching
+At each step, consider ALL valid next stops:
+- Any WAITING request's origin floor (pickup)
+- Any BOARDED request's destination floor (delivery)
+- Constraint: can't pick up more than (K - peopleCount)
+
+### Validation (hard — kills the branch)
+- Capacity exceeded (peopleCount + boarding > K) → invalid.
+- A BOARDED party's delivery missing from the plan → invalid (lock invariant).
+
+### Pruning (soft — drops weak branches)
+- Negative slack (branch makes a request late) → prune.
+- Deadline about to breach → force that request's promotion instead of exploring freely.
+
+### Tree Branch Evaluation (scoring)
+For each surviving branch, compute the average wait across all requests. Pick the branch with the lowest average wait.
+
+### Next Destination Response (GET /api/elevators/{id}/next-destination)
+The response sent to the elevator:
+```json
+{
+  "elevator": "A",
+  "nextFloor": 5,
+  "boarding": [
+    { "requestId": "r-00042", "destinationFloor": 17, "count": 2 }
+  ]
+}
+```
+- **elevator**: carId (e.g., "A")
+- **nextFloor**: the floor to go to
+- **boarding**: list of groups that board here (for the landing panel display)
 
 ### Request Lifecycle
 - **WAITING**: requested, not yet picked up. Freely reassignable.
@@ -24,11 +70,14 @@ Each request has:
 The transition WAITING → BOARDED happens when a car PULLS its next destination (the pull confirms the stop is complete).
 
 ### Per-Car State
-- Current floor
-- Direction (UP/DOWN/IDLE)
-- Occupancy (how many aboard)
-- Queue (ordered list of stops to make)
-- Capacity K (max people, e.g., 8-16)
+- **carId**: "A", "B", "C", ... (capital letter)
+- **destination**: the floor the car is committed to go to (also the starting point for tree search)
+- **isIdle**: true/false (everything else — moving/opening/closing — is the same to the tree)
+- **peopleCount**: how many aboard (sum of boardingCount from boarded requests)
+- **boardedIds**: list of requestIds that are BOARDED (the "debt" until delivery)
+- **Capacity K**: max people (e.g., 8-16)
+
+Sanity check: `sum(boardingCount of boardedIds) == peopleCount`
 
 ---
 
