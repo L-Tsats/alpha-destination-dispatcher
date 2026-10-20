@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  REVERSE TASK: library.xsd is the CONTRACT. Write an XML document here that
+  OBEYS it. You read the schema, then fill in real (invented) data that fits
+  every rule.
+
+  Read library.xsd and translate each rule into what your XML must contain:
+
+    <library>                     root element
+      holds 1+ <book>             (book maxOccurs="unbounded")
+
+    each <book isbn="...">        isbn is a REQUIRED attribute (string)
+      children, IN THIS ORDER (BookType sequence):
+        <title>   text
+        <author>  text, ONE OR MORE   (maxOccurs="unbounded")
+        <year>    whole number
+        <genre>   must be FICTION, SCIENCE, or HISTORY   (GenreType enum)
+        <price currency="...">decimal</price>
+                  the TEXT is a decimal number, and 'currency' is a
+                  REQUIRED attribute  (PriceType = extension base)
+        <note>    text, OPTIONAL   (minOccurs="0")
+
+  GOAL: write at least TWO books. Give one book two <author>s (exercise the
+  repeat rule) and give the OTHER a <note> (exercise the optional rule). Use a
+  different genre and currency across them.
+
+  Write your document below (replace the placeholder comment).
+  Reference answer (peek AFTER trying): solutions/38-xml-schema/
+-->
+
+<library>
+
+  <!-- write your <book> entries here -->
+
+</library>

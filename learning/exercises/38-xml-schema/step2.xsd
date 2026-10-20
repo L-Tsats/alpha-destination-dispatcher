@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- STEP 2: the same shape, but different built-in types. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="age" type="xs:int"/>
+
+</xs:schema>
+
+<!--
+  Describes:   <age>25</age>
+  Try mentally swapping the type:
+      xs:string  -> <age>twenty</age>  (text)
+      xs:decimal -> <age>25.5</age>    (number with decimals)
+      xs:boolean -> <age>true</age>    (true/false)
+-->

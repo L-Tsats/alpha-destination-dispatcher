@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- STEP 5: how MANY — minOccurs (optional) and maxOccurs (repeat). -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="book">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="title"    type="xs:string"/>
+        <xs:element name="author"   type="xs:string" maxOccurs="unbounded"/>
+        <xs:element name="subtitle" type="xs:string" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>
+
+<!--
+  Describes e.g.:
+      <book>
+        <title>The Practice of Programming</title>
+        <author>Kernighan</author>
+        <author>Pike</author>          (author may REPEAT: maxOccurs unbounded)
+      </book>                          (subtitle omitted: minOccurs 0 = optional)
+  Default (no min/maxOccurs) means EXACTLY ONCE, required.
+-->

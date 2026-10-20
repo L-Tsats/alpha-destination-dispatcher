@@ -12,7 +12,7 @@ Four modules communicating over REST (JSON):
 |--------|------|
 | Keypad (per floor) | Takes a request (destination + how many boarding), confirms "sent". |
 | Central controller (the brain) | Tracks all cars, decides which car + where, optimizes pending time. |
-| Elevator controller (one per car) | Mechanical: moves, owns its doors, drives displays, reports status. |
+| Elevator controller (one per car) | Mechanical: moves, owns its doors, in & out displays. |
 | Evaluation/ SImulation system | Runs traffic scenarios, measures waiting time. |
 | Visual Interface | Live-scenario graphic representation of elevator movements |
 
