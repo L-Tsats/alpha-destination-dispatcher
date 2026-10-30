@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 820" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="520" height="820" fill="#f7f9fc"/>
+  <text x="260" y="34" text-anchor="middle" font-size="22" font-weight="700" fill="#1a2b4a">REST Message Contracts</text>
+  <text x="260" y="55" text-anchor="middle" font-size="12" fill="#5a6b85">JSON over HTTP · only the brain is a server</text>
+
+  <!-- ===== MSG 1: POST /api/requests ===== -->
+  <rect x="25" y="75" width="470" height="230" rx="10" fill="#fff4ea" stroke="#e07b2a" stroke-width="2.5"/>
+  <rect x="25" y="75" width="470" height="32" rx="10" fill="#e07b2a"/>
+  <text x="41" y="97" font-size="13.5" font-weight="700" fill="#ffffff">MSG 1 — Keypad → Brain : submit request</text>
+  <text x="41" y="128" font-size="13" font-weight="700" fill="#b2560f">POST /api/requests</text>
+  <text x="41" y="146" font-size="10.5" fill="#8a5a2a">201 Created · 400 if destinationFloor == fromFloor</text>
+
+  <text x="41" y="170" font-size="11" font-weight="700" fill="#5a3d99">REQUEST</text>
+  <rect x="41" y="177" width="215" height="110" rx="6" fill="#2b2233"/>
+  <text x="53" y="195" font-size="10.5" fill="#e8d8ff" font-family="monospace">{</text>
+  <text x="53" y="212" font-size="10.5" fill="#e8d8ff" font-family="monospace">  "fromFloor": 3,</text>
+  <text x="53" y="229" font-size="10.5" fill="#e8d8ff" font-family="monospace">  "destinationFloor": 17,</text>
+  <text x="53" y="246" font-size="10.5" fill="#e8d8ff" font-family="monospace">  "boardingCount": 2,</text>
+  <text x="53" y="263" font-size="10.5" fill="#e8d8ff" font-family="monospace">  "time": "..Z"</text>
+  <text x="53" y="280" font-size="10.5" fill="#e8d8ff" font-family="monospace">}</text>
+
+  <text x="268" y="170" font-size="11" font-weight="700" fill="#5a3d99">RESPONSE (ack)</text>
+  <rect x="268" y="177" width="215" height="92" rx="6" fill="#1e2a22"/>
+  <text x="280" y="195" font-size="10.5" fill="#c9f5e0" font-family="monospace">{</text>
+  <text x="280" y="212" font-size="10.5" fill="#c9f5e0" font-family="monospace">  "status": "received",</text>
+  <text x="280" y="229" font-size="10.5" fill="#c9f5e0" font-family="monospace">  "requestId": "r-00042",</text>
+  <text x="280" y="246" font-size="10.5" fill="#c9f5e0" font-family="monospace">  "elevator": "C"</text>
+  <text x="280" y="263" font-size="10.5" fill="#c9f5e0" font-family="monospace">}</text>
+  <text x="268" y="288" font-size="10" fill="#8a5a2a">"elevator" = car letter the keypad shows</text>
+
+  <!-- ===== MSG 2: GET next-destination ===== -->
+  <rect x="25" y="325" width="470" height="250" rx="10" fill="#e9f7f4" stroke="#1aa89a" stroke-width="2.5"/>
+  <rect x="25" y="325" width="470" height="32" rx="10" fill="#1aa89a"/>
+  <text x="41" y="347" font-size="13.5" font-weight="700" fill="#ffffff">MSG 2 — Elevator → Brain : PULL next stop</text>
+  <text x="41" y="378" font-size="12.5" font-weight="700" fill="#0f766e">GET /api/elevators/{id}/next-destination</text>
+  <text x="41" y="396" font-size="10.5" fill="#2a7a72">200 OK + body · 204 No Content (go idle)</text>
+
+  <text x="41" y="420" font-size="11" font-weight="700" fill="#5a3d99">RESPONSE (next stop only)</text>
+  <rect x="41" y="427" width="300" height="130" rx="6" fill="#1e2a22"/>
+  <text x="53" y="445" font-size="10.5" fill="#c9f5e0" font-family="monospace">{</text>
+  <text x="53" y="462" font-size="10.5" fill="#c9f5e0" font-family="monospace">  "elevator": "A",</text>
+  <text x="53" y="479" font-size="10.5" fill="#c9f5e0" font-family="monospace">  "nextFloor": 5,</text>
+  <text x="53" y="496" font-size="10.5" fill="#c9f5e0" font-family="monospace">  "boarding": [</text>
+  <text x="53" y="513" font-size="10.5" fill="#c9f5e0" font-family="monospace">    { "requestId": "r-00042",</text>
+  <text x="53" y="530" font-size="10.5" fill="#c9f5e0" font-family="monospace">      "destinationFloor": 17 }</text>
+  <text x="53" y="547" font-size="10.5" fill="#c9f5e0" font-family="monospace">  ] }</text>
+  <text x="352" y="450" font-size="10" fill="#2a7a72">pull = brain</text>
+  <text x="352" y="464" font-size="10" fill="#2a7a72">never pushes.</text>
+  <text x="352" y="482" font-size="10" fill="#2a7a72">it also signals</text>
+  <text x="352" y="496" font-size="10" fill="#2a7a72">"prev stop</text>
+  <text x="352" y="510" font-size="10" fill="#2a7a72">done" → lock</text>
+  <text x="352" y="524" font-size="10" fill="#2a7a72">boardings</text>
+  <text x="352" y="538" font-size="10" fill="#2a7a72">ABOARD.</text>
+
+  <!-- ===== MSG 3: POST status ===== -->
+  <rect x="25" y="595" width="470" height="200" rx="10" fill="#e9f7f4" stroke="#1aa89a" stroke-width="2.5"/>
+  <rect x="25" y="595" width="470" height="32" rx="10" fill="#1aa89a"/>
+  <text x="41" y="617" font-size="13.5" font-weight="700" fill="#ffffff">MSG 3 — Elevator → Brain : status (optional)</text>
+  <text x="41" y="648" font-size="12.5" font-weight="700" fill="#0f766e">POST /api/elevators/{id}/status</text>
+  <text x="41" y="666" font-size="10.5" fill="#2a7a72">200 OK · sent on arrival · ground-truth telemetry</text>
+
+  <text x="41" y="690" font-size="11" font-weight="700" fill="#5a3d99">BODY</text>
+  <rect x="41" y="697" width="300" height="88" rx="6" fill="#1e2a22"/>
+  <text x="53" y="715" font-size="10.5" fill="#c9f5e0" font-family="monospace">{ "elevator": "A", "currentFloor": 5,</text>
+  <text x="53" y="732" font-size="10.5" fill="#c9f5e0" font-family="monospace">  "direction": "UP",</text>
+  <text x="53" y="749" font-size="10.5" fill="#c9f5e0" font-family="monospace">  "event": "ARRIVED",</text>
+  <text x="53" y="766" font-size="10.5" fill="#c9f5e0" font-family="monospace">  "arrivalTime": "..Z" }</text>
+  <text x="352" y="720" font-size="10" fill="#2a7a72">core loop</text>
+  <text x="352" y="734" font-size="10" fill="#2a7a72">runs on the</text>
+  <text x="352" y="748" font-size="10" fill="#2a7a72">pull; this is</text>
+  <text x="352" y="762" font-size="10" fill="#2a7a72">just safe-</text>
+  <text x="352" y="776" font-size="10" fill="#2a7a72">keeping.</text>
+</svg>

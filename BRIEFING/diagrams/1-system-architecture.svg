@@ -1,99 +1,96 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 680" font-family="Segoe UI, Arial, sans-serif">
-  <rect width="940" height="680" fill="#f7f9fc"/>
-  <text x="470" y="40" text-anchor="middle" font-size="26" font-weight="700" fill="#1a2b4a">Smart Elevator System — Architecture</text>
-  <text x="470" y="64" text-anchor="middle" font-size="14" fill="#5a6b85">Destination dispatch · central brain decides, elevator arms execute</text>
-  <text x="470" y="84" text-anchor="middle" font-size="12" fill="#8a2a6a" font-style="italic">Only the BRAIN is an HTTP server; keypads &amp; elevators are clients that call it</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 680" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="960" height="680" fill="#f7f9fc"/>
+  <text x="480" y="40" text-anchor="middle" font-size="26" font-weight="700" fill="#1a2b4a">Smart Elevator System — Architecture</text>
+  <text x="480" y="64" text-anchor="middle" font-size="14" fill="#5a6b85">Destination dispatch · central brain decides, elevator arms execute</text>
+  <text x="480" y="84" text-anchor="middle" font-size="12" fill="#8a2a6a" font-style="italic">ONLY the BRAIN is an HTTP server · keypads &amp; elevators are clients that call it</text>
 
   <!-- KEYPAD -->
-  <rect x="40" y="110" width="200" height="150" rx="12" fill="#ffe9d6" stroke="#e07b2a" stroke-width="2.5"/>
-  <text x="140" y="138" text-anchor="middle" font-size="17" font-weight="700" fill="#b2560f">KEYPAD</text>
-  <text x="140" y="158" text-anchor="middle" font-size="11.5" fill="#8a5a2a">(one per floor · stateless)</text>
-  <text x="140" y="184" text-anchor="middle" font-size="12" fill="#6a4a2a">enter: destination floor</text>
-  <text x="140" y="202" text-anchor="middle" font-size="12" fill="#6a4a2a">+ how many boarding</text>
-  <text x="140" y="226" text-anchor="middle" font-size="12" fill="#6a4a2a">shows only "request sent ✓"</text>
-  <text x="140" y="246" text-anchor="middle" font-size="11" fill="#8a5a2a" font-style="italic">does NOT show your car</text>
+  <rect x="40" y="115" width="210" height="175" rx="12" fill="#ffe9d6" stroke="#e07b2a" stroke-width="2.5"/>
+  <text x="145" y="143" text-anchor="middle" font-size="17" font-weight="700" fill="#b2560f">KEYPAD</text>
+  <text x="145" y="162" text-anchor="middle" font-size="11.5" fill="#8a5a2a">(one per floor · client)</text>
+  <text x="145" y="188" text-anchor="middle" font-size="12" fill="#6a4a2a">enter: destination floor</text>
+  <text x="145" y="208" text-anchor="middle" font-size="12" fill="#6a4a2a">+ how many boarding</text>
+  <text x="145" y="234" text-anchor="middle" font-size="12.5" fill="#6a4a2a" font-weight="700">shows the CAR LETTER</text>
+  <text x="145" y="252" text-anchor="middle" font-size="12.5" fill="#6a4a2a" font-weight="700">to wait for  (e.g. "Car C")</text>
+  <text x="145" y="276" text-anchor="middle" font-size="10.5" fill="#8a5a2a" font-style="italic">same screen · no separate display</text>
 
   <!-- BRAIN -->
-  <rect x="370" y="95" width="230" height="300" rx="12" fill="#efe9f8" stroke="#6b4ea8" stroke-width="3"/>
-  <text x="485" y="124" text-anchor="middle" font-size="18" font-weight="700" fill="#5a3d99">CENTRAL CONTROLLER</text>
-  <text x="485" y="144" text-anchor="middle" font-size="13" font-weight="700" fill="#5a3d99">— THE BRAIN —</text>
-  <line x1="390" y1="156" x2="580" y2="156" stroke="#c3b2e0" stroke-width="1"/>
-  <text x="485" y="178" text-anchor="middle" font-size="11.5" fill="#4a3580">tracks EVERY elevator:</text>
-  <text x="485" y="198" text-anchor="middle" font-size="11.5" fill="#6a5a90">position · direction</text>
-  <text x="485" y="216" text-anchor="middle" font-size="11.5" fill="#6a5a90">pending stops · occupancy</text>
-  <line x1="390" y1="232" x2="580" y2="232" stroke="#c3b2e0" stroke-width="1"/>
-  <text x="485" y="254" text-anchor="middle" font-size="11.5" fill="#4a3580">decides WHICH car + WHERE</text>
-  <text x="485" y="272" text-anchor="middle" font-size="11.5" fill="#4a3580">assigns car LATE · can reassign</text>
-  <text x="485" y="296" text-anchor="middle" font-size="11.5" fill="#4a3580" font-weight="700">tracks how long requests</text>
-  <text x="485" y="314" text-anchor="middle" font-size="11.5" fill="#4a3580" font-weight="700">stay PENDING  ← the metric</text>
-  <line x1="390" y1="330" x2="580" y2="330" stroke="#c3b2e0" stroke-width="1"/>
-  <text x="485" y="352" text-anchor="middle" font-size="11" fill="#8a2a6a">(Tier 2: dispatch optimization</text>
-  <text x="485" y="370" text-anchor="middle" font-size="11" fill="#8a2a6a">+ HMM live here)</text>
+  <rect x="375" y="100" width="235" height="300" rx="12" fill="#efe9f8" stroke="#6b4ea8" stroke-width="3"/>
+  <text x="492" y="129" text-anchor="middle" font-size="18" font-weight="700" fill="#5a3d99">CENTRAL CONTROLLER</text>
+  <text x="492" y="149" text-anchor="middle" font-size="13" font-weight="700" fill="#5a3d99">— THE BRAIN (only server) —</text>
+  <line x1="395" y1="161" x2="590" y2="161" stroke="#c3b2e0" stroke-width="1"/>
+  <text x="492" y="183" text-anchor="middle" font-size="11.5" fill="#4a3580">tracks EVERY car:</text>
+  <text x="492" y="201" text-anchor="middle" font-size="11.5" fill="#6a5a90">position · onboard · stops</text>
+  <line x1="395" y1="215" x2="590" y2="215" stroke="#c3b2e0" stroke-width="1"/>
+  <text x="492" y="237" text-anchor="middle" font-size="11.5" fill="#4a3580">tree-search dispatch:</text>
+  <text x="492" y="255" text-anchor="middle" font-size="11.5" fill="#4a3580">decides WHICH car + WHERE</text>
+  <text x="492" y="273" text-anchor="middle" font-size="11" fill="#4a3580">assigns the car at request time</text>
+  <text x="492" y="289" text-anchor="middle" font-size="10.5" fill="#8a2a6a" font-style="italic">(eager commit · car locked once shown)</text>
+  <line x1="395" y1="302" x2="590" y2="302" stroke="#c3b2e0" stroke-width="1"/>
+  <text x="492" y="324" text-anchor="middle" font-size="11.5" fill="#4a3580" font-weight="700">tracks WAIT &amp; JOURNEY per request</text>
+  <line x1="395" y1="338" x2="590" y2="338" stroke="#c3b2e0" stroke-width="1"/>
+  <text x="492" y="360" text-anchor="middle" font-size="11" fill="#8a2a6a">(Tier 2 / optional: pruning · slack ·</text>
+  <text x="492" y="378" text-anchor="middle" font-size="11" fill="#8a2a6a">deadline · traffic mode · HMM)</text>
 
   <!-- ELEVATOR -->
-  <rect x="710" y="110" width="200" height="300" rx="12" fill="#e6f7f5" stroke="#1aa89a" stroke-width="2.5"/>
-  <text x="810" y="138" text-anchor="middle" font-size="16" font-weight="700" fill="#0f766e">ELEVATOR ARM</text>
-  <text x="810" y="158" text-anchor="middle" font-size="11.5" fill="#2a7a72">(one per car · letter ID)</text>
-  <text x="810" y="184" text-anchor="middle" font-size="11.5" fill="#2a6a62">MECHANICAL only:</text>
-  <text x="810" y="206" text-anchor="middle" font-size="11.5" fill="#2a6a62">• PULLS next destination</text>
-  <text x="810" y="226" text-anchor="middle" font-size="11.5" fill="#2a6a62">• owns its DOORS</text>
-  <text x="810" y="248" text-anchor="middle" font-size="11.5" fill="#2a6a62">• landing panel:</text>
-  <text x="810" y="265" text-anchor="middle" font-size="11" fill="#2a7a72">"X people for floor Y"</text>
-  <text x="810" y="287" text-anchor="middle" font-size="11.5" fill="#2a6a62">• in-car display: next floor</text>
-  <text x="810" y="309" text-anchor="middle" font-size="11.5" fill="#2a6a62">• report status back</text>
-  <line x1="730" y1="326" x2="890" y2="326" stroke="#9fd8d1" stroke-width="1"/>
-  <text x="810" y="348" text-anchor="middle" font-size="11" fill="#2a7a72" font-style="italic">decides HOW it physically</text>
-  <text x="810" y="365" text-anchor="middle" font-size="11" fill="#2a7a72" font-style="italic">moves — not who to serve</text>
+  <rect x="730" y="115" width="200" height="285" rx="12" fill="#e6f7f5" stroke="#1aa89a" stroke-width="2.5"/>
+  <text x="830" y="143" text-anchor="middle" font-size="16" font-weight="700" fill="#0f766e">ELEVATOR ARM</text>
+  <text x="830" y="162" text-anchor="middle" font-size="11.5" fill="#2a7a72">(one per car · letter ID · client)</text>
+  <text x="830" y="188" text-anchor="middle" font-size="11.5" fill="#2a6a62">MECHANICAL only:</text>
+  <text x="830" y="210" text-anchor="middle" font-size="11.5" fill="#2a6a62">• PULLS next destination</text>
+  <text x="830" y="230" text-anchor="middle" font-size="11.5" fill="#2a6a62">• owns its DOORS + weight stall</text>
+  <text x="830" y="250" text-anchor="middle" font-size="11.5" fill="#2a6a62">• in-car display: next floor</text>
+  <text x="830" y="270" text-anchor="middle" font-size="11.5" fill="#2a6a62">• reports status (optional)</text>
+  <line x1="750" y1="296" x2="910" y2="296" stroke="#9fd8d1" stroke-width="1"/>
+  <text x="830" y="318" text-anchor="middle" font-size="11" fill="#2a7a72" font-style="italic">decides HOW it physically</text>
+  <text x="830" y="335" text-anchor="middle" font-size="11" fill="#2a7a72" font-style="italic">moves — not who to serve</text>
 
-  <!-- arrows keypad -> brain (keypad is a client) -->
-  <line x1="240" y1="165" x2="368" y2="165" stroke="#e07b2a" stroke-width="2.5" marker-end="url(#oArrow)"/>
-  <text x="304" y="150" text-anchor="middle" font-size="11" fill="#b2560f" font-weight="700">POST /api/requests</text>
-  <text x="304" y="163" text-anchor="middle" font-size="10" fill="#b2560f">request</text>
-  <line x1="368" y1="205" x2="240" y2="205" stroke="#e07b2a" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#oArrowBack)"/>
-  <text x="304" y="221" text-anchor="middle" font-size="10" fill="#b2560f">201 "sent ✓" + requestId</text>
+  <!-- arrows keypad -> brain -->
+  <line x1="250" y1="175" x2="373" y2="175" stroke="#e07b2a" stroke-width="2.5" marker-end="url(#oArrow)"/>
+  <text x="311" y="162" text-anchor="middle" font-size="10.5" fill="#b2560f" font-weight="700">POST /api/requests</text>
+  <line x1="373" y1="220" x2="250" y2="220" stroke="#6b4ea8" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#oArrowBack)"/>
+  <text x="311" y="236" text-anchor="middle" font-size="9.5" fill="#5a3d99">201 {requestId, elevator}</text>
 
-  <!-- arrows elevator -> brain (elevator is a client: PULLS + reports) -->
-  <line x1="708" y1="195" x2="600" y2="195" stroke="#1aa89a" stroke-width="2.5" marker-end="url(#tArrowBack)"/>
-  <text x="654" y="180" text-anchor="middle" font-size="10.5" fill="#0f766e" font-weight="700">GET next-destination</text>
-  <text x="654" y="192" text-anchor="middle" font-size="9.5" fill="#0f766e">(elevator PULLS)</text>
-  <line x1="600" y1="212" x2="708" y2="212" stroke="#6b4ea8" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#pArrow)"/>
-  <text x="654" y="226" text-anchor="middle" font-size="9.5" fill="#5a3d99">200 {floor, boarding}</text>
-  <line x1="708" y1="255" x2="600" y2="255" stroke="#1aa89a" stroke-width="2.5" marker-end="url(#tArrowBack)"/>
-  <text x="654" y="270" text-anchor="middle" font-size="10.5" fill="#0f766e" font-weight="700">POST status</text>
+  <!-- arrows elevator -> brain -->
+  <line x1="728" y1="195" x2="612" y2="195" stroke="#1aa89a" stroke-width="2.5" marker-end="url(#tArrowBack)"/>
+  <text x="670" y="182" text-anchor="middle" font-size="10" fill="#0f766e" font-weight="700">GET next-destination</text>
+  <text x="670" y="194" text-anchor="middle" font-size="9" fill="#0f766e">(elevator PULLS)</text>
+  <line x1="612" y1="213" x2="728" y2="213" stroke="#6b4ea8" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#pArrow)"/>
+  <text x="670" y="227" text-anchor="middle" font-size="9" fill="#5a3d99">200 {nextFloor, boarding[]}</text>
+  <line x1="728" y1="255" x2="612" y2="255" stroke="#1aa89a" stroke-width="2.5" marker-end="url(#tArrowBack)"/>
+  <text x="670" y="270" text-anchor="middle" font-size="10" fill="#0f766e" font-weight="700">POST status (optional)</text>
 
-  <!-- EVALUATION (bottom-left, under brain) -->
-  <rect x="300" y="470" width="300" height="150" rx="12" fill="#fde6f0" stroke="#c23a7a" stroke-width="2.5"/>
-  <text x="450" y="498" text-anchor="middle" font-size="16" font-weight="700" fill="#9a2a5e">EVALUATION SYSTEM</text>
-  <text x="450" y="522" text-anchor="middle" font-size="12" fill="#8a3a66">plays traffic scenarios</text>
-  <text x="450" y="542" text-anchor="middle" font-size="12" fill="#8a3a66">(morning rush · 5pm exodus · random)</text>
-  <text x="450" y="566" text-anchor="middle" font-size="12" fill="#8a3a66">measures how long people WAIT</text>
-  <text x="450" y="590" text-anchor="middle" font-size="11" fill="#b05a86" font-style="italic">(exact methods finalized with all teams)</text>
-  <line x1="470" y1="395" x2="440" y2="468" stroke="#c23a7a" stroke-width="2" marker-end="url(#eArrow)"/>
-  <text x="500" y="440" text-anchor="middle" font-size="11" fill="#9a2a5e">operating data</text>
+  <!-- EVALUATION -->
+  <rect x="300" y="460" width="320" height="170" rx="12" fill="#fde6f0" stroke="#c23a7a" stroke-width="2.5"/>
+  <text x="460" y="488" text-anchor="middle" font-size="16" font-weight="700" fill="#9a2a5e">EVALUATION / SIMULATION</text>
+  <text x="460" y="512" text-anchor="middle" font-size="12" fill="#8a3a66">NHPP traffic generator (up/down/mixed)</text>
+  <text x="460" y="532" text-anchor="middle" font-size="12" fill="#8a3a66">feeds synthetic requests · one harness</text>
+  <text x="460" y="552" text-anchor="middle" font-size="12" fill="#8a3a66">measures avg wait · journey · p90 · max</text>
+  <text x="460" y="574" text-anchor="middle" font-size="11.5" fill="#8a3a66">baseline: Erlang-C / collective control</text>
+  <text x="460" y="598" text-anchor="middle" font-size="11" fill="#b05a86" font-style="italic">the comparative STUDY runs here</text>
+  <line x1="480" y1="400" x2="455" y2="458" stroke="#c23a7a" stroke-width="2" marker-end="url(#eArrow)"/>
+  <text x="520" y="435" text-anchor="middle" font-size="11" fill="#9a2a5e">requests + metrics</text>
 
-  <!-- VISUALIZER (bottom-right, under elevator) read-only, dashed optional -->
-  <rect x="650" y="470" width="260" height="150" rx="12" fill="#eef1f5" stroke="#8a97a8" stroke-width="2" stroke-dasharray="8 5"/>
-  <text x="780" y="496" text-anchor="middle" font-size="14" font-weight="700" fill="#55637a">VISUALIZER (optional)</text>
-  <text x="780" y="516" text-anchor="middle" font-size="11.5" fill="#66748a">live view of cars moving</text>
-  <text x="780" y="533" text-anchor="middle" font-size="11.5" fill="#66748a">+ requests — "terminal for the eyes"</text>
-  <!-- mini shaft mock -->
-  <rect x="700" y="544" width="30" height="60" rx="3" fill="#ffffff" stroke="#8a97a8"/>
-  <rect x="740" y="544" width="30" height="60" rx="3" fill="#ffffff" stroke="#8a97a8"/>
-  <rect x="706" y="566" width="18" height="16" rx="2" fill="#1aa89a"/><text x="715" y="578" text-anchor="middle" font-size="9" fill="#fff" font-weight="700">A</text>
-  <rect x="746" y="552" width="18" height="16" rx="2" fill="#1aa89a"/><text x="755" y="564" text-anchor="middle" font-size="9" fill="#fff" font-weight="700">B</text>
-  <text x="828" y="580" font-size="10.5" fill="#66748a">great for the</text>
-  <text x="828" y="595" font-size="10.5" fill="#66748a">promo video</text>
-  <line x1="810" y1="410" x2="800" y2="468" stroke="#8a97a8" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#vArrow)"/>
-  <text x="872" y="440" text-anchor="middle" font-size="10" fill="#66748a">reads status</text>
-  <text x="872" y="453" text-anchor="middle" font-size="10" fill="#66748a">(read-only)</text>
+  <!-- VISUALIZER -->
+  <rect x="660" y="460" width="270" height="170" rx="12" fill="#eef1f5" stroke="#8a97a8" stroke-width="2" stroke-dasharray="8 5"/>
+  <text x="795" y="486" text-anchor="middle" font-size="14" font-weight="700" fill="#55637a">VISUALIZER (optional)</text>
+  <text x="795" y="506" text-anchor="middle" font-size="11.5" fill="#66748a">live view of cars + requests</text>
+  <rect x="710" y="520" width="30" height="64" rx="3" fill="#ffffff" stroke="#8a97a8"/>
+  <rect x="750" y="520" width="30" height="64" rx="3" fill="#ffffff" stroke="#8a97a8"/>
+  <rect x="716" y="544" width="18" height="16" rx="2" fill="#1aa89a"/><text x="725" y="556" text-anchor="middle" font-size="9" fill="#fff" font-weight="700">A</text>
+  <rect x="756" y="528" width="18" height="16" rx="2" fill="#1aa89a"/><text x="765" y="540" text-anchor="middle" font-size="9" fill="#fff" font-weight="700">B</text>
+  <text x="845" y="556" font-size="10.5" fill="#66748a">great for the</text>
+  <text x="845" y="571" font-size="10.5" fill="#66748a">promo video</text>
+  <line x1="820" y1="400" x2="810" y2="458" stroke="#8a97a8" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#vArrow)"/>
+  <text x="884" y="435" text-anchor="middle" font-size="10" fill="#66748a">reads status</text>
 
   <!-- takeaways -->
-  <text x="40" y="650" font-size="12.5" font-weight="700" fill="#1a2b4a">Brain decides WHO / WHERE · Arm decides HOW (doors = the clean example).</text>
-  <text x="40" y="670" font-size="12.5" font-weight="700" fill="#1a2b4a">The REST message contracts between the boxes are the shared team deliverable.</text>
+  <text x="40" y="658" font-size="12.5" font-weight="700" fill="#1a2b4a">Brain decides WHO / WHERE · Arm decides HOW (doors = the clean example) · one server, everyone else pulls.</text>
+  <text x="40" y="676" font-size="12.5" font-weight="700" fill="#1a2b4a">The 3 core REST message contracts between the boxes are the shared, cross-team standardization deliverable.</text>
 
   <defs>
     <marker id="oArrow" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 Z" fill="#e07b2a"/></marker>
-    <marker id="oArrowBack" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 Z" fill="#e07b2a"/></marker>
+    <marker id="oArrowBack" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 Z" fill="#6b4ea8"/></marker>
     <marker id="pArrow" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 Z" fill="#6b4ea8"/></marker>
     <marker id="tArrowBack" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 Z" fill="#1aa89a"/></marker>
     <marker id="eArrow" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 Z" fill="#c23a7a"/></marker>
