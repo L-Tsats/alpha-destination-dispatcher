@@ -7,6 +7,7 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.io.IOException;
 
+import dispatcher.sim.http.NextDestinationResponse;
 import dispatcher.sim.http.PassengerRequest;
 import dispatcher.sim.http.AssignmentResponse;
 
@@ -52,6 +53,54 @@ public class Brain {
             exchange.sendResponseHeaders(200, bytes.length);
             exchange.getResponseBody().write(bytes); //Sends the bytes of the json response
             exchange.close();
+
+
+
+        });
+
+        //Elevator requests
+        server.createContext("/api/elevators/", exchange -> {
+            
+            String path = exchange.getRequestURI().getPath();
+            String[] parts = path.split("/");
+            if (parts.length != 5 ||
+                !parts[1].equals("api") ||
+                !parts[2].equals("elevators") ||
+                parts[3].isBlank() ||
+                !parts[4].equals("next-destination")) {
+
+                exchange.sendResponseHeaders(404, -1);
+                exchange.close();
+                return;
+            }
+
+
+
+            String savedElevatorId = parts[3]; //Testing purposes
+
+
+            Gson gson = new Gson();
+
+            System.out.println(savedElevatorId);
+
+            if (savedElevatorId.equals("B")) { //Testing purposes
+                NextDestinationResponse x = new NextDestinationResponse(5); //Testing purposes
+
+                String responseJson = gson.toJson(x);
+                
+                byte[] bytes = responseJson.getBytes(StandardCharsets.UTF_8);
+                exchange.getResponseHeaders().set(
+                    "Content-Type", "application/json"
+                );
+
+                exchange.sendResponseHeaders(200, bytes.length);
+                exchange.getResponseBody().write(bytes); //Sends the bytes of the json response
+                exchange.close();
+
+
+            }else{
+                System.out.println("lauos");
+            }
 
 
 
