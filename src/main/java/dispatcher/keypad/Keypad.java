@@ -1,4 +1,7 @@
 package dispatcher.keypad;
+import dispatcher.sim.http.AssignmentResponse;
+import dispatcher.sim.http.BrainApiClient;
+import dispatcher.sim.http.PassengerRequest;
 import java.util.Scanner;
 
 public class Keypad {
@@ -6,12 +9,12 @@ public class Keypad {
     private KeypadState currentState;
     private final BrainApiClient client = new BrainApiClient("http://localhost:8080");
 
-    public Keypad(int currentFloor,) {
+    public Keypad(int currentFloor) {
         this.currentFloor = currentFloor;
         this.currentState = KeypadState.INPUTFLOOR;
     }
 
-    public void start() {
+    public void start() throws InterruptedException {
         PassengerRequest request = null;
         Scanner scanner = new Scanner(System.in);
         while (true) {
