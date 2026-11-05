@@ -62,6 +62,8 @@ public class Keypad {
                     // Code to handle maintenance state
                     break;
             }
+            
+            scanner.close();
         }
     }
 
