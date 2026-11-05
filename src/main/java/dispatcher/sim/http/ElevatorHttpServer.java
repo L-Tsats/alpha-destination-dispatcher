@@ -19,10 +19,10 @@ public class ElevatorHttpServer {
         this.elevator = elevator;
 
         server = HttpServer.create(
-            new InetSocketAddress("127.0.0.1", 8080), 0
+            new InetSocketAddress("127.0.0.1", 8081), 0
         );
 
-        server.createContext("/elevators/1/floor", this::getFloor);
+        server.createContext("/elevators/" + elevator.getId() + "/floor", this::getFloor);
     }
 
     private void getFloor(HttpExchange exchange) throws IOException {
@@ -32,16 +32,15 @@ public class ElevatorHttpServer {
             return;
         }
 
-        if (!exchange.getRequestURI().getPath()
-                .equals("/elevators/1/floor")) {
+        if (!exchange.getRequestURI().getPath().equals("/elevators/" +elevator.getId() + "/floor")) {
             sendResponse(exchange, 404, "Not found");
             return;
         }
 
         int floor = elevator.getCurrentFloor();
 
-        String response = "{\"id\":" + elevator.getId()
-                        + ",\"floor\":" + floor + "}";
+        String response = "{\"id\":\"" + elevator.getId()
+                        + "\",\"floor\":" + floor + "}";
 
         sendResponse(exchange, 200, response);
     }
@@ -66,6 +65,6 @@ public class ElevatorHttpServer {
 
     public void start() {
         server.start();
-        System.out.println("HTTP Server running on port 8080");
+        System.out.println("HTTP Server running on port 8081");
     }
 }
