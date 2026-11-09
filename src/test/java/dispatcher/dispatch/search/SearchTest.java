@@ -20,7 +20,7 @@ public class SearchTest {
         Search search = new Search(40);
 
         long startNanos = System.nanoTime();
-        List<Stop> best = search.run(List.of(r1, r2));
+        List<Stop> best = search.searchBestroute(List.of(r1, r2), 1, 0.0);
         long elapsedNanos = System.nanoTime() - startNanos;
 
         // --- correctness ---

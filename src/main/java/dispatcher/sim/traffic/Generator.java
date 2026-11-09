@@ -3,6 +3,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.commons.math3.distribution.NormalDistribution;
+
 public class Generator {
     private final Random random;
     
@@ -17,13 +19,30 @@ public class Generator {
     public List<Passenger> simulate(Scenario scenario, int n) {
         List<Double> times = simulateTimes(scenario);
         List<Passenger> passengers = new ArrayList<>();
+        int sampledPartySize;
+        double sampleWeight;
+        double weight;
+        NormalDistribution weightDist = new NormalDistribution(80.0, 12.0);
+
         for (double t : times) {
             int[] floors = scenario.getTrafficType().sampleFloors(n, random);
-            passengers.add(new Passenger(samplePartySize(), floors[0], floors[1], t));
+            sampledPartySize = samplePartySize();
+            weight = 0;
+
+            for (int i = 1; i <= sampledPartySize; i++) {
+                sampleWeight = weightDist.sample();
+                while (sampleWeight < 40) { 
+                    sampleWeight = weightDist.sample();
+                }
+                weight += sampleWeight;
+            }
+            
+            passengers.add(new Passenger(sampledPartySize, floors[0], floors[1], t, weight));
+            
         }
 
         return passengers;
-        
+
     }
 
     private List<Double> simulateTimes(Scenario scenario) {

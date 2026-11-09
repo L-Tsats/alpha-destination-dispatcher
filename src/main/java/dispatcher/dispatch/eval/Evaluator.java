@@ -16,7 +16,6 @@ public class Evaluator {
 
     public PlanEvaluation evaluate(List<Stop> stops, int startFloor, double currentTime) {
         double clock = currentTime;
-        double dwell = 2.0;
         int currentFloor = startFloor;
         Map<String, Double> pickupWaits = new HashMap<>();
         Map<String, Double> deliveryWaits = new HashMap<>();
@@ -30,10 +29,10 @@ public class Evaluator {
             }
 
             for(Request deliveryRequest : stop.getAlighting()) {
-                deliveryWaits.put(deliveryRequest.getRequestId(), (clock - deliveryRequest.getArrivalTime())); //  - pickupWaits.get(deliveryRequest.getRequestId() for in-car time
+                deliveryWaits.put(deliveryRequest.getRequestId(), (clock - deliveryRequest.getArrivalTime()));
             }
 
-            clock += dwell;
+            clock += 4.0 + 1.1 * Math.max(stop.getBoarding().size(), stop.getAlighting().size()); // Simulated dwell time
         }
 
         return new PlanEvaluation(pickupWaits, deliveryWaits);

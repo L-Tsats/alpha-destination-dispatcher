@@ -25,7 +25,7 @@ public class Search {
         evaluator  = new Evaluator(nFloors);
     }
 
-    public List<Stop> run(List<Request> requests, int startFloor, double currentTime) {
+    public List<Stop> searchBestroute(List<Request> requests, int startFloor, double currentTime) {
         bestScore = Double.POSITIVE_INFINITY;
         bestRoute = null;
         this.startFloor = startFloor;
@@ -40,8 +40,8 @@ public class Search {
                 onboard.add(r);
             }
         }
-
         search(new ArrayList<>(), toPickup, onboard);
+
         return bestRoute;
     }
 
@@ -64,7 +64,7 @@ public class Search {
     private double score(PlanEvaluation plan) {
         double sum = 0;
         int count = 0;
-        for (Map.Entry<String, Double> wait : plan.getPickupWaits().entrySet()) {
+        for (Map.Entry<String, Double> wait : plan.getDeliveryWaits().entrySet()) {
             sum += wait.getValue();
             count ++;
         }
