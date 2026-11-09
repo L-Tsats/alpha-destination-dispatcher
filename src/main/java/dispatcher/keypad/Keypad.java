@@ -3,6 +3,7 @@ import dispatcher.sim.http.AssignmentResponse;
 import dispatcher.sim.http.BrainApiClient;
 import dispatcher.sim.http.PassengerRequest;
 import java.util.Scanner;
+import java.util.InputMismatchException;
 import java.io.IOException;
 
 public class Keypad {
@@ -22,17 +23,23 @@ public class Keypad {
             switch (currentState) {
                 case INPUTFLOOR:
                     System.out.print("Enter destination floor: ");
-                    int destinationFloor = scanner.nextInt();
-                    if (destinationFloor < 1 || destinationFloor > 10) {
-                        System.out.println("Invalid floor. Please enter a floor between 1 and 10.");
-                        continue;
+                    try {
+                        int destinationFloor = scanner.nextInt();
+                        if (destinationFloor < 1 || destinationFloor > 10) {
+                            System.out.println("Invalid floor. Please enter a floor between 1 and 10.");
+                            continue;
+                        }
+                        if (destinationFloor == currentFloor) {
+                            System.out.println("You are already on this floor. Please enter a different floor.");
+                            continue;
+                        }
+                        request = new PassengerRequest(currentFloor, destinationFloor);
+                        currentState = KeypadState.AWAITING;
+                       
+                    } catch (java.util.InputMismatchException e) {
+                        System.out.println("Invalid input. Please enter a valid floor number.");
+                        scanner.nextLine(); // Clear the invalid input
                     }
-                    if (destinationFloor == currentFloor) {
-                        System.out.println("You are already on this floor. Please enter a different floor.");
-                        continue;
-                    }
-                    request = new PassengerRequest(currentFloor, destinationFloor);
-                    currentState = KeypadState.AWAITING;
                     break;
                 case AWAITING:
                     System.out.println("Request sent. Awaiting response...");
@@ -42,7 +49,6 @@ public class Keypad {
                             System.out.println("Elevator assigned: " + response.elevatorID());
                             currentState = KeypadState.ACCEPTED;
                         } else {
-                            System.out.println("Request rejected. Please try again.");
                             currentState = KeypadState.REJECTED;
                         }
                     } catch (Exception e) {
@@ -56,10 +62,13 @@ public class Keypad {
                     currentState = KeypadState.INPUTFLOOR; // Reset to input floor after acceptance
                     break;
                 case REJECTED:
-                    // Code to handle rejected state
+                    System.out.println("Request rejected. Please try again.");
+                    Thread.sleep(3000); // Simulate waiting before allowing another input
+                    currentState = KeypadState.INPUTFLOOR; // Reset to input floor after rejection
                     break;
                 case MAINTENANCE:
-                    // Code to handle maintenance state
+                    System.out.println("System is under maintenance. Please try again later.");
+                    Thread.sleep(5000); // Simulate maintenance duration
                     break;
             }
             
@@ -75,24 +84,5 @@ public class Keypad {
         keypad.start();
     }
 
-    private void showInputFloor() {
-        // Code to show input floor state
-    }
-
-    private void showAwaiting() {
-        // Code to show awaiting state
-    }
-
-    private void showAccepted() {
-        // Code to show accepted state
-    }
-
-    private void showRejected() {
-        // Code to show rejected state
-    }
-
-    private void showMaintenance() {
-        // Code to show maintenance state
-    }
 
 }
