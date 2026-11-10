@@ -1,9 +1,9 @@
 package dispatcher.keypad;
+import java.util.Scanner;
+
 import dispatcher.sim.http.AssignmentResponse;
 import dispatcher.sim.http.BrainApiClient;
 import dispatcher.sim.http.PassengerRequest;
-import java.util.Scanner;
-import java.io.IOException;
 
 public class Keypad {
     private int currentFloor;
@@ -67,7 +67,7 @@ public class Keypad {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         // Δημιουργούμε ένα πληκτρολόγιο που βρίσκεται, για παράδειγμα, στον 3ο όροφο
         Keypad keypad = new Keypad(3); 
         

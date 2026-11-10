@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 import dispatcher.dispatch.eval.PlanEvaluation;
@@ -43,4 +47,32 @@ public class SearchTest {
         System.out.println("deliveryWaits: " + eval.getDeliveryWaits());
         System.out.println("bestRoute floors: " + pickupFloors + " + dropoffs");
     }
+    
+    @Test
+    void zeroBudgetAbortsBeforeAnyPlan() {
+        Search s = new Search(10);
+        List<Request> reqs = List.of(
+                new Request("a", 3, 8, 0.0),
+                new Request("b", 5, 2, 0.0));
+
+        List<Stop> result = s.searchBestroute(reqs, 1, 0.0, -1.0);
+
+        assertTrue(s.wasAborted());
+        assertNull(result);
+    }
+
+    @Test
+    void generousBudgetFinishesWithoutAbort() {
+        Search s = new Search(10);
+        List<Request> reqs = List.of(
+                new Request("a", 3, 8, 0.0),
+                new Request("b", 5, 2, 0.0));
+
+        List<Stop> result = s.searchBestroute(reqs, 1, 0.0, 10.0);
+
+        assertFalse(s.wasAborted());
+        assertNotNull(result);
+        assertEquals(4, result.size()); // 2 pickups + 2 dropoffs
+    }
+
 }

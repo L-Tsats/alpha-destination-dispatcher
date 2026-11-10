@@ -16,6 +16,9 @@ public class Search {
     private double bestScore = Double.POSITIVE_INFINITY;
     private PlanEvaluation bestplPlanEvaluation;
 
+    private long deadlineNanos = Long.MAX_VALUE;  // "no limit" by default
+    private boolean aborted;
+
     private int startFloor;
     private double currentTime;
 
@@ -25,11 +28,17 @@ public class Search {
         evaluator  = new Evaluator(nFloors);
     }
 
-    public List<Stop> searchBestroute(List<Request> requests, int startFloor, double currentTime) {
+    public List<Stop> searchBestroute(List<Request> requests, int startFloor, double currentTime, double budgetSeconds) {
+        bestplPlanEvaluation = null;
         bestScore = Double.POSITIVE_INFINITY;
         bestRoute = null;
         this.startFloor = startFloor;
         this.currentTime = currentTime;
+        this.aborted = false;
+        this.deadlineNanos = budgetSeconds > 1e6
+                ? Long.MAX_VALUE
+                : System.nanoTime() + (long) (budgetSeconds * 1e9);
+
 
         List<Request> toPickup = new ArrayList<>();
         List<Request> onboard = new ArrayList<>();
@@ -45,7 +54,13 @@ public class Search {
         return bestRoute;
     }
 
+    public List<Stop> searchBestroute(List<Request> requests, int startFloor, double currentTime) {
+        return searchBestroute(requests, startFloor, currentTime, Double.MAX_VALUE);
+    }
+
     private void search(List<Stop> stopsSoFar, List<Request> toPickup, List<Request> onboard) {
+        if (timeIsUp()) return;
+
         if(toPickup.isEmpty() && onboard.isEmpty()) {
             PlanEvaluation planEval = evaluator.evaluate(stopsSoFar, startFloor, currentTime);
             double score = score(planEval);
@@ -69,6 +84,7 @@ public class Search {
             count ++;
         }
         
+        if (count == 0) return 0;
         return sum / count;
     }
 
@@ -116,4 +132,12 @@ public class Search {
         return bestplPlanEvaluation;
     }
 
+    private boolean timeIsUp() {
+        if (!aborted && System.nanoTime() > deadlineNanos) {
+            aborted = true;
+        }
+        return aborted;
+    }
+
+    public boolean wasAborted() { return aborted; }
 }

@@ -17,12 +17,27 @@ import dispatcher.timing.TravelModel;
 
 public class Runner {
     private final int nFloors;
+    private int overdueSearches = 0;
+    private double totalSearchMs = 0.0;
+    private double maxSearchMs = 0.0;
+
+    private Double budgetOverride = null;   // null = use the real budget
+
+    // for tests only: forces every search to use this budget
+    void setBudgetOverride(Double budget) {
+        this.budgetOverride = budget;
+    }
+
 
     public Runner(int nFloors) {
         this.nFloors = nFloors;
     }
     
     public PlanEvaluation run(List<Passenger> passengers) {
+        overdueSearches = 0;
+        totalSearchMs = 0.0;
+        maxSearchMs = 0.0;
+
         PriorityQueue<Event> eventLine = new PriorityQueue<>();
         double clock = 0.0;
         int requestCounter = 0;
@@ -51,13 +66,38 @@ public class Runner {
                     requests.add(toRequest(nextEvent.getPassenger(), id, nextEvent.getTime()));
                     passengerById.put(id, nextEvent.getPassenger());
                     long t0 = System.nanoTime();
-                    bestRoute = new ArrayList<>(search.searchBestroute(requests, car.getDestFloor(), clock));
+
+                    double budget = budgetOverride != null
+                        ? budgetOverride // For testing mostly: override the budget to force a search abort
+                        : (car.isIdle() ? 1.0 : car.getNextDecisionTime() - clock);
+
                     double elapsedTime = (System.nanoTime() - t0) / 1_000_000.0;
+                    totalSearchMs += elapsedTime;
+                    if (elapsedTime > maxSearchMs) {
+                        maxSearchMs = elapsedTime;
+                    }
+
+                    List<Stop> result = search.searchBestroute(requests, car.getDestFloor(), clock, budget);
+
+                    if (result != null) {
+                        bestRoute = new ArrayList<>(result);
+                    } else {
+                        // Search aborted before finding any complete plan: append the newest request to the old plan
+                        Request newest = requests.get(requests.size() - 1);
+                        bestRoute.add(new Stop(newest.getFromFloor(), new ArrayList<>(List.of(newest)), new ArrayList<>()));
+                        bestRoute.add(new Stop(newest.getToFloor(), new ArrayList<>(), new ArrayList<>(List.of(newest))));
+                    }
+
+                    // Subtle time check
+                    if (search.wasAborted()) {
+                        overdueSearches++;
+                    }
 
                     if(car.isIdle()) {
                         car.setIdle(false);
                         eventLine.add(new Event(clock, null, EventType.ELEVATOR_REQUEST));
                     }
+
                 }
                 case ELEVATOR_REQUEST -> {
                     if(bestRoute.isEmpty()) {
@@ -77,7 +117,9 @@ public class Runner {
                         r.setStatus(DELIVERED);
                     }
 
-                    eventLine.add(new Event(arrival + dwell(stop), null, EventType.ELEVATOR_REQUEST));
+                    car.setNextDecisionTime(arrival + dwell(stop));
+
+                    eventLine.add(new Event(car.getNextDecisionTime(), null, EventType.ELEVATOR_REQUEST));
                 }
             }
 
@@ -86,10 +128,24 @@ public class Runner {
         return new PlanEvaluation(waits, journeys);
     }
 
+    // Getters
     public int getNFloors(){
         return nFloors;
     }
 
+    public int getOverdueSearches() {
+        return overdueSearches;
+    }
+
+    public double getTotalSearchMs() {
+        return totalSearchMs;
+    }
+
+    public double getMaxSearchMs() {
+        return maxSearchMs;
+    }
+
+    // Helpers
     private Request toRequest(Passenger passenger, String id, double time) {
         return new Request(id, passenger.getFromFloor(), passenger.getToFloor(), time);
     }
@@ -97,5 +153,6 @@ public class Runner {
     private double dwell(Stop s) {
         return 4.0 + 1.1 * Math.max(s.getBoarding().size(), s.getAlighting().size());
     }
+
 
 }
