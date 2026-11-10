@@ -27,7 +27,9 @@ public class ElevatorRun {
         System.out.println("Motor is starting");
         Thread.sleep(T_START_MS);// περιμενει μισο δευτερολεπτο πριν ξεκινησει
 
+        elevator.setTargetFloor(targetFloor);
         elevator.setCurrentState(ElevatorState.MOVING);
+        displayTargetFloor();
         System.out.println(">>> Next stop is floor " + targetFloor + " <<<");
 
         
@@ -56,6 +58,7 @@ public class ElevatorRun {
         System.out.println("Doors are closing now");
         Thread.sleep(T_DOOR_MS / 3);
 
+      
         elevator.setCurrentState(ElevatorState.IDLE);
         System.out.println("Elevator " + elevator.getId() + " is now idle");
     }
@@ -79,4 +82,11 @@ public class ElevatorRun {
         System.out.println("Brain gave command to move to floor: " + nextFloor);
         runner.movetoFloor(nextFloor);
     }
+
+    private void displayTargetFloor() {
+        System.out.println("----------------------------");
+        System.out.println("Next floor: " + elevator.getTargetFloor());
+        System.out.println("----------------------------");
+     }
+
 }
