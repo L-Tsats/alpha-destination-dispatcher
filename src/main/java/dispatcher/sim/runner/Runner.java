@@ -20,6 +20,7 @@ public class Runner {
     private int overdueSearches = 0;
     private double totalSearchMs = 0.0;
     private double maxSearchMs = 0.0;
+    private Double fixedSearchSeconds = null;
 
     private Double budgetOverride = null;   // null = use the real budget
 
@@ -50,11 +51,12 @@ public class Runner {
         List<Request> requests = new ArrayList<>();
         Map<String, Passenger> passengerById = new HashMap<>();
         Search search = new Search(nFloors);
+
         Car car  = new Car("A", 1);
-        List<Stop> bestRoute = new ArrayList<>();
+        CarPlan plan = new CarPlan(car, false);
+
         Map<String, Double> waits = new HashMap<>();
         Map<String, Double> journeys = new HashMap<>();
-
 
         while (!eventLine.isEmpty()) {
             Event nextEvent = eventLine.poll();
@@ -62,49 +64,56 @@ public class Runner {
 
             switch (nextEvent.getType()) {
                 case KEYPAD_REQUEST -> {
+                    List<Stop> result = null;
+
                     String id = String.format("r-%05d", ++requestCounter);
                     requests.add(toRequest(nextEvent.getPassenger(), id, nextEvent.getTime()));
                     passengerById.put(id, nextEvent.getPassenger());
-                    long t0 = System.nanoTime();
 
                     double budget = budgetOverride != null
-                        ? budgetOverride // For testing mostly: override the budget to force a search abort
+                        ? budgetOverride
                         : (car.isIdle() ? 1.0 : car.getNextDecisionTime() - clock);
 
-                    double elapsedTime = (System.nanoTime() - t0) / 1_000_000.0;
-                    totalSearchMs += elapsedTime;
-                    if (elapsedTime > maxSearchMs) {
-                        maxSearchMs = elapsedTime;
-                    }
+                    long t0 = System.nanoTime();
+                    result = search.searchBestroute(requests, car.getDestFloor(), clock, budget);
+                    double elapsedMs = (System.nanoTime() - t0) / 1_000_000.0;
 
-                    List<Stop> result = search.searchBestroute(requests, car.getDestFloor(), clock, budget);
+                    totalSearchMs += elapsedMs;
+                    maxSearchMs = Math.max(maxSearchMs, elapsedMs);
 
-                    if (result != null) {
-                        bestRoute = new ArrayList<>(result);
-                    } else {
-                        // Search aborted before finding any complete plan: append the newest request to the old plan
-                        Request newest = requests.get(requests.size() - 1);
-                        bestRoute.add(new Stop(newest.getFromFloor(), new ArrayList<>(List.of(newest)), new ArrayList<>()));
-                        bestRoute.add(new Stop(newest.getToFloor(), new ArrayList<>(), new ArrayList<>(List.of(newest))));
-                    }
+                    double d = fixedSearchSeconds != null ? fixedSearchSeconds : elapsedMs / 1000.0;
 
-                    // Subtle time check
-                    if (search.wasAborted()) {
+                    Event next = eventLine.peek();   // peek BEFORE scheduling the idle car's event
+                    boolean late = next != null && clock + d > next.getTime();
+
+                    if (late || search.wasAborted()) {
                         overdueSearches++;
                     }
 
-                    if(car.isIdle()) {
+                    if (late || result == null) {
+                        // plan not ready in time, or no plan found: keep the old route and append the newest request
+                        appendRequest(plan.getRoute(), requests.get(requests.size() - 1));
+                        plan.setSearchIncomplete(true);
+                    } else {
+                        plan.setRoute(new ArrayList<>(result));
+                        plan.setSearchIncomplete(search.wasAborted());
+                    }
+
+                    if (car.isIdle()) {
                         car.setIdle(false);
-                        eventLine.add(new Event(clock, null, EventType.ELEVATOR_REQUEST));
+                        car.setNextDecisionTime(clock + d);
+                        eventLine.add(new Event(clock + d, null, EventType.ELEVATOR_REQUEST));
                     }
 
                 }
                 case ELEVATOR_REQUEST -> {
-                    if(bestRoute.isEmpty()) {
+                    List<Stop> result = null;
+
+                    if(plan.getRoute().isEmpty()) {
                         car.setIdle(true);
                         break; // No more stops to make, car is idle
                     }
-                    Stop stop = bestRoute.remove(0);
+                    Stop stop = plan.getRoute().remove(0);
                     double arrival = clock + travelTable[Math.abs(stop.getFloor() - car.getDestFloor())];
 
                     car.setDestFloor(stop.getFloor());
@@ -118,8 +127,21 @@ public class Runner {
                     }
 
                     car.setNextDecisionTime(arrival + dwell(stop));
-
                     eventLine.add(new Event(car.getNextDecisionTime(), null, EventType.ELEVATOR_REQUEST));
+
+                    if(plan.isSearchIncomplete()) {
+                        long t1 = System.nanoTime();
+                        result = search.searchBestroute(requests, car.getDestFloor(), arrival, dwell(stop));
+                        double reMs = (System.nanoTime() - t1) / 1_000_000.0;
+                        totalSearchMs += reMs;
+                        maxSearchMs = Math.max(maxSearchMs, reMs);
+
+                        if(result != null) {
+                            plan.setRoute(new ArrayList<>(result));
+                            plan.setSearchIncomplete(search.wasAborted());
+                        }
+                    }
+
                 }
             }
 
@@ -145,6 +167,10 @@ public class Runner {
         return maxSearchMs;
     }
 
+    public void setFixedSearchSeconds(Double fixedSearchSeconds) {
+        this.fixedSearchSeconds = fixedSearchSeconds;
+    }
+
     // Helpers
     private Request toRequest(Passenger passenger, String id, double time) {
         return new Request(id, passenger.getFromFloor(), passenger.getToFloor(), time);
@@ -154,5 +180,9 @@ public class Runner {
         return 4.0 + 1.1 * Math.max(s.getBoarding().size(), s.getAlighting().size());
     }
 
+    private void appendRequest(List<Stop> route, Request r) {
+        route.add(new Stop(r.getFromFloor(), new ArrayList<>(List.of(r)), new ArrayList<>()));
+        route.add(new Stop(r.getToFloor(), new ArrayList<>(), new ArrayList<>(List.of(r))));
+    }
 
 }

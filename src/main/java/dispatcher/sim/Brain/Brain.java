@@ -1,15 +1,16 @@
 
 package dispatcher.sim.Brain;
 
-import com.sun.net.httpserver.HttpServer;
-import com.google.gson.Gson;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
-import java.io.IOException;
 
+import com.google.gson.Gson;
+import com.sun.net.httpserver.HttpServer;
+
+import dispatcher.sim.http.AssignmentResponse;
 import dispatcher.sim.http.NextDestinationResponse;
 import dispatcher.sim.http.PassengerRequest;
-import dispatcher.sim.http.AssignmentResponse;
 
 public class Brain {
     private static final String elevatorId = "B"; //Testing purposes
@@ -98,7 +99,7 @@ public class Brain {
                 exchange.close();
 
 
-            }else{
+            } else {
                 System.out.println("lauos");
             }
 
@@ -106,5 +107,7 @@ public class Brain {
 
         });
         server.start();
+        
     }
+
 }

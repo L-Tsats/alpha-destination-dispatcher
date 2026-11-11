@@ -22,7 +22,6 @@ public class TravelModel {
         this.h = h;
         this.t_start = t_start;
     }
-
     
     public double[] buildTravelTable(int n) {
         double[] table = new double[n];
