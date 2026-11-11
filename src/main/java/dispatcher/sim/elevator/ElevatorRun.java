@@ -73,14 +73,24 @@ public class ElevatorRun {
         int startingFloor = Integer.parseInt(args[1]);
         BrainApiClient client =new BrainApiClient("http://localhost:8080");
         Elevator e1 = new Elevator(elevatorId, startingFloor);
-        ElevatorHttpServer server = new ElevatorHttpServer(e1);
-        server.start();
-
         ElevatorRun runner = new ElevatorRun(e1);
-        int nextFloor = client.getNextDest(e1.getId()).nextFloor();
+        while (true) {
+            
+            if (e1.getCurrentState() == ElevatorState.IDLE) {
+                //μεχρι να μπει το κανονικο, int nextFloor = client.getNextDestination(e1.getId(), e1.getCurrentFloor());
+                int nextFloor = e1.getTargetFloor();
+                if (nextFloor != e1.getCurrentFloor()) {
+                    System.out.println("Brain gave command to move to floor: " + nextFloor);
+                    runner.movetoFloor(nextFloor);
+                } else {
+                    Thread.sleep(1000);
+                }
+            } else {
+                Thread.sleep(1000);
+            }
+        }
 
-        System.out.println("Brain gave command to move to floor: " + nextFloor);
-        runner.movetoFloor(nextFloor);
+        
     }
 
     private void displayTargetFloor() {

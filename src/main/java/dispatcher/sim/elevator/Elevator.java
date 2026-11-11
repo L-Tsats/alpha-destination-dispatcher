@@ -33,12 +33,12 @@ public class Elevator {
     }
 
     public int getTargetFloor() {
-    return targetFloor;
+        return targetFloor;
     }
 
     public void setTargetFloor(int floor) {
     this.targetFloor = floor;
-   }
+    }
 
     public void setCurrentFloor(int floor) {
         this.currentFloor = floor;
@@ -46,7 +46,7 @@ public class Elevator {
 
     
     // Χρειάζονται για να ενημερώνει η ElevatorRun την κατάσταση του ανελκυστήρα.
-      public void setCurrentState(ElevatorState state) {
+    public void setCurrentState(ElevatorState state) {
         this.currentState = state;
     }
 
