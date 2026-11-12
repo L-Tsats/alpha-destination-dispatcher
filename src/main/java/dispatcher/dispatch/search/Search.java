@@ -2,10 +2,11 @@ package dispatcher.dispatch.search;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.function.BooleanSupplier;
 
-import dispatcher.dispatch.eval.Evaluator;
+import dispatcher.dispatch.eval.Evaluator; // Used for running it's code to supply values while the search is running!
 import dispatcher.dispatch.eval.PlanEvaluation;
+import dispatcher.dispatch.eval.PlanScorer;
 import dispatcher.dispatch.eval.Request;
 import dispatcher.dispatch.eval.Status;
 import dispatcher.dispatch.eval.Stop;
@@ -18,6 +19,8 @@ public class Search {
 
     private long deadlineNanos = Long.MAX_VALUE;  // "no limit" by default
     private boolean aborted;
+
+    private BooleanSupplier cancelCheck = () -> false;   // default: never cancel
 
     private int startFloor;
     private double currentTime;
@@ -63,7 +66,7 @@ public class Search {
 
         if(toPickup.isEmpty() && onboard.isEmpty()) {
             PlanEvaluation planEval = evaluator.evaluate(stopsSoFar, startFloor, currentTime);
-            double score = score(planEval);
+            double score = PlanScorer.deliveryMean(planEval);
             if (score < bestScore) {
                 bestScore = score;
                 bestRoute = List.copyOf(stopsSoFar);
@@ -74,18 +77,6 @@ public class Search {
         }  
         recurseValidCases(stopsSoFar, toPickup, onboard);
 
-    }
-
-    private double score(PlanEvaluation plan) {
-        double sum = 0;
-        int count = 0;
-        for (Map.Entry<String, Double> wait : plan.getDeliveryWaits().entrySet()) {
-            sum += wait.getValue();
-            count ++;
-        }
-        
-        if (count == 0) return 0;
-        return sum / count;
     }
 
     private void recurseValidCases (List<Stop> stopsSoFar, List<Request> toPickup, List<Request> onboard) {
@@ -132,12 +123,17 @@ public class Search {
         return bestplPlanEvaluation;
     }
 
+    public void setCancelCheck(BooleanSupplier cancelCheck) {
+        this.cancelCheck = cancelCheck;
+    }
+
     private boolean timeIsUp() {
-        if (!aborted && System.nanoTime() > deadlineNanos) {
+        if (!aborted && System.nanoTime() > deadlineNanos || cancelCheck.getAsBoolean()) {
             aborted = true;
         }
         return aborted;
     }
 
     public boolean wasAborted() { return aborted; }
+    
 }

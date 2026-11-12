@@ -2,6 +2,7 @@ package dispatcher.dispatch.search;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -73,6 +74,56 @@ public class SearchTest {
         assertFalse(s.wasAborted());
         assertNotNull(result);
         assertEquals(4, result.size()); // 2 pickups + 2 dropoffs
+    }
+
+    @Test
+    void cancelCheckThatSaysTrueAbortsAtOnce() {
+        Search s = new Search(10);
+        s.setCancelCheck(() -> true);
+        List<Request> reqs = List.of(
+                new Request("a", 3, 8, 0.0),
+                new Request("b", 5, 2, 0.0));
+
+        List<Stop> result = s.searchBestroute(reqs, 1, 0.0);
+
+        assertTrue(s.wasAborted());
+        assertNull(result);
+    }
+
+    @Test
+    void cancelCheckThatFlipsMidSearchKeepsBestSoFar() {
+        Search s = new Search(10);
+        AtomicInteger calls = new AtomicInteger();
+        s.setCancelCheck(() -> calls.incrementAndGet() > 50);   // cancel after 50 checks
+        List<Request> reqs = List.of(
+                new Request("a", 3, 8, 0.0),
+                new Request("b", 5, 2, 0.0),
+                new Request("c", 7, 9, 0.0),
+                new Request("d", 2, 6, 0.0),
+                new Request("e", 9, 1, 0.0));
+
+        List<Stop> result = s.searchBestroute(reqs, 1, 0.0);
+
+        assertTrue(s.wasAborted());
+        assertNotNull(result);   // the first complete plan is found well before check 50
+    }
+
+    @Test
+    void searchIsReusableAfterACancel() {
+        Search s = new Search(10);
+        List<Request> reqs = List.of(
+                new Request("a", 3, 8, 0.0),
+                new Request("b", 5, 2, 0.0));
+
+        s.setCancelCheck(() -> true);
+        s.searchBestroute(reqs, 1, 0.0);
+        assertTrue(s.wasAborted());
+
+        s.setCancelCheck(() -> false);
+        List<Stop> result = s.searchBestroute(reqs, 1, 0.0);
+
+        assertFalse(s.wasAborted());
+        assertEquals(4, result.size());
     }
 
 }

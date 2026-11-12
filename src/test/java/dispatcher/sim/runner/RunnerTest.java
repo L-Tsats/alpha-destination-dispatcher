@@ -136,4 +136,66 @@ public class RunnerTest {
         assertEquals(1005.8, out.getPickupWaits().get("r-00001"), 0.01);
     }
 
+    @Test
+    void twoCarsSplitTwoRequests() {
+        Runner runner = new Runner(40, 2);
+        runner.setFixedSearchSeconds(0.0);
+
+        PlanEvaluation result = runner.run(List.of(
+                new Passenger(1, 3, 9, 1.0, 80.0),     // r-00001 at 60 s -> car A
+                new Passenger(1, 5, 7, 1.05, 80.0)));  // r-00002 at 63 s -> car B
+
+        assertEquals(5.8, result.getPickupWaits().get("r-00001"), 0.001);
+        assertEquals(22.3, result.getDeliveryWaits().get("r-00001"), 0.001);
+
+        // B starts idle at floor 1: pickup at 5 is gap 4 = 8.6 s
+        assertEquals(8.6, result.getPickupWaits().get("r-00002"), 0.001);
+        // 63 + 8.6 = 71.6, dwell 5.1 -> 76.7, then gap 2 = 5.8 -> 82.5, so journey 19.5
+        assertEquals(19.5, result.getDeliveryWaits().get("r-00002"), 0.001);
+    }
+
+    @Test
+    void threeCarsServeEveryoneInABurst() {
+        Runner runner = new Runner(40, 3);
+        runner.setFixedSearchSeconds(0.0);
+
+        PlanEvaluation out = runner.run(List.of(
+                new Passenger(1, 3, 9, 1.00, 80.0),
+                new Passenger(1, 5, 7, 1.01, 80.0),
+                new Passenger(1, 12, 2, 1.02, 80.0),
+                new Passenger(1, 8, 20, 1.03, 80.0),
+                new Passenger(1, 15, 1, 1.04, 80.0),
+                new Passenger(1, 6, 30, 1.05, 80.0)));
+
+        assertEquals(6, out.getPickupWaits().size());
+        assertEquals(6, out.getDeliveryWaits().size());
+        for (String id : out.getPickupWaits().keySet()) {
+            assertTrue(out.getDeliveryWaits().get(id) > out.getPickupWaits().get(id));
+        }
+        assertEquals(0, runner.getOverdueSearches());
+    }
+
+    private double totalJourney(boolean reSearch) {
+        Runner runner = new Runner(40);
+        runner.setBudgetOverride(-1.0);       // every keypad search aborts, so insertion plans
+        runner.setFixedSearchSeconds(0.0);
+        runner.setReSearchEnabled(reSearch);
+
+        PlanEvaluation out = runner.run(List.of(
+                new Passenger(1, 26, 29, 1.0, 80.0),
+                new Passenger(1, 8, 34, 61.0 / 60.0, 80.0),
+                new Passenger(1, 15, 25, 62.0 / 60.0, 80.0),
+                new Passenger(1, 35, 7, 63.0 / 60.0, 80.0)));
+
+        assertEquals(4, out.getDeliveryWaits().size());
+        return out.getDeliveryWaits().values().stream().mapToDouble(Double::doubleValue).sum();
+    }
+
+    @Test
+    void reSearchNeverMakesTheInsertionPlanWorse() {
+        double with = totalJourney(true);
+        double without = totalJourney(false);
+        assertTrue(with <= without + 1e-9);
+    }
+
 }

@@ -13,11 +13,11 @@ public class EventOrderingTest {
         PriorityQueue<Event> queue = new PriorityQueue<>();
 
         // add events DELIBERATELY out of order (times: 9.0, 2.0, 5.0, 1.0, 7.0)
-        queue.add(new Event(9.0, dummy(), EventType.KEYPAD_REQUEST));
-        queue.add(new Event(2.0, dummy(), EventType.KEYPAD_REQUEST));
-        queue.add(new Event(5.0, dummy(), EventType.KEYPAD_REQUEST));
-        queue.add(new Event(1.0, dummy(), EventType.KEYPAD_REQUEST));
-        queue.add(new Event(7.0, dummy(), EventType.KEYPAD_REQUEST));
+        queue.add(new Event(9.0, dummy(), EventType.KEYPAD_REQUEST, null));
+        queue.add(new Event(2.0, dummy(), EventType.KEYPAD_REQUEST, null));
+        queue.add(new Event(5.0, dummy(), EventType.KEYPAD_REQUEST, null));
+        queue.add(new Event(1.0, dummy(), EventType.KEYPAD_REQUEST, null));
+        queue.add(new Event(7.0, dummy(), EventType.KEYPAD_REQUEST, null));
 
         // poll them out — must come in ASCENDING time order
         double previous = Double.NEGATIVE_INFINITY;

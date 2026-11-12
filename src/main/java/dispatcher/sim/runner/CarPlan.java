@@ -3,12 +3,15 @@ package dispatcher.sim.runner;
 import java.util.ArrayList;
 import java.util.List;
 
+import dispatcher.dispatch.eval.Request;
+import dispatcher.dispatch.eval.Status;
 import dispatcher.dispatch.eval.Stop;
 
 public class CarPlan {
     private boolean searchIncomplete;
     private final Car car;
     private List<Stop> route = new ArrayList<>();
+    private final List<Request> requests = new ArrayList<>();
 
     public CarPlan(Car car, boolean searchIncomplete) {
         this.car = car;
@@ -31,7 +34,15 @@ public class CarPlan {
         this.route = route;
     }
 
-    public String getCar() {
-        return car.getId();
+    public Car getCar() {
+        return car;
+    }
+
+    public List<Request> getRequests() {
+        return requests;
+    }
+
+    public int unfinishedCount() {
+        return (int) requests.stream().filter(r -> r.getStatus() != Status.DELIVERED).count();
     }
 }
