@@ -9,6 +9,8 @@ import java.util.PriorityQueue;
 
 import dispatcher.dispatch.assign.Insertion;
 import dispatcher.dispatch.assign.InsertionAssigner;
+import dispatcher.dispatch.brain.Car;
+import dispatcher.dispatch.brain.CarPlan;
 import dispatcher.dispatch.eval.PlanEvaluation;
 import dispatcher.dispatch.eval.Request;
 import static dispatcher.dispatch.eval.Status.BOARDED;

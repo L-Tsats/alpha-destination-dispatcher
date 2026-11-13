@@ -1,3 +1,3 @@
-package dispatcher.sim.http;
+package dispatcher.api.dto;
 
 public record NextDestinationResponse(int nextFloor){}

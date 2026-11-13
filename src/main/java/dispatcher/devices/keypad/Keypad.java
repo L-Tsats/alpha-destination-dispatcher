@@ -1,9 +1,9 @@
-package dispatcher.keypad;
+package dispatcher.devices.keypad;
 import java.util.Scanner;
 
-import dispatcher.sim.http.AssignmentResponse;
-import dispatcher.sim.http.BrainApiClient;
-import dispatcher.sim.http.PassengerRequest;
+import dispatcher.api.dto.AssignmentResponse;
+import dispatcher.api.BrainApiClient;
+import dispatcher.api.dto.PassengerRequest;
 
 public class Keypad {
     private int currentFloor;

@@ -1,4 +1,8 @@
-package dispatcher.sim.http;
+package dispatcher.api;
+
+import dispatcher.api.dto.AssignmentResponse;
+import dispatcher.api.dto.NextDestinationResponse;
+import dispatcher.api.dto.PassengerRequest;
 
 import java.net.URI;
 import com.sun.net.httpserver.HttpServer;

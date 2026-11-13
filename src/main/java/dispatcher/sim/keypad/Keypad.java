@@ -1,8 +1,8 @@
 package dispatcher.sim.keypad;
 
-import dispatcher.sim.http.BrainApiClient;
-import dispatcher.sim.http.PassengerRequest;
-import dispatcher.sim.http.AssignmentResponse;
+import dispatcher.api.BrainApiClient;
+import dispatcher.api.dto.PassengerRequest;
+import dispatcher.api.dto.AssignmentResponse;
 
 import java.io.IOException;
 

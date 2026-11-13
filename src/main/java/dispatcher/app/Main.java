@@ -1,8 +1,8 @@
 
-package dispatcher.sim;
+package dispatcher.app;
 
-import dispatcher.sim.elevator.Elevator;
-import dispatcher.sim.http.ElevatorHttpServer;
+import dispatcher.devices.elevator.Elevator;
+import dispatcher.devices.elevator.ElevatorHttpServer;
 
 public class Main {
 

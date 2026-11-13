@@ -1,5 +1,5 @@
 
-package dispatcher.sim.Brain;
+package dispatcher.api;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -8,9 +8,9 @@ import java.nio.charset.StandardCharsets;
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpServer;
 
-import dispatcher.sim.http.AssignmentResponse;
-import dispatcher.sim.http.NextDestinationResponse;
-import dispatcher.sim.http.PassengerRequest;
+import dispatcher.api.dto.AssignmentResponse;
+import dispatcher.api.dto.NextDestinationResponse;
+import dispatcher.api.dto.PassengerRequest;
 
 public class Brain {
     private static final String elevatorId = "B"; //Testing purposes

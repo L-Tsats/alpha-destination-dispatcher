@@ -1,10 +1,10 @@
-package dispatcher.sim.elevator;
+package dispatcher.devices.elevator;
 
-//import dispatcher.sim.http.NextDestinationResponse;
-//import dispatcher.sim.http.PassengerRequest;
-//import dispatcher.sim.http.AssignmentResponse;
-import dispatcher.sim.http.BrainApiClient;
-import dispatcher.sim.http.ElevatorHttpServer;
+//import dispatcher.api.dto.NextDestinationResponse;
+//import dispatcher.api.dto.PassengerRequest;
+//import dispatcher.api.dto.AssignmentResponse;
+import dispatcher.api.BrainApiClient;
+
 
 import java.io.IOException;
 
