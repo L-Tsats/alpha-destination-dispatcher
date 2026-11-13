@@ -55,17 +55,17 @@ Rules for phase 1:
 Owner in brackets.
 
 ```
-  dispatch/brain/BrainCore.java        [Tassos] the 3 contract methods + stats, time as a parameter
-  api/BrainServer.java                 [Tassos] real handlers, calls BrainCore
-  api/dto/...                          [Tassos + team] add optional `time`; add `requestId` and `status` to the ack; add the status record
-  api/BrainApiClient.java              [team] status POST; one shared HttpClient; timeouts
-  timing/Dwell.java                    [Tassos] the dwell formula in one place
-  sim/play/ScenarioSpec.java           [Tassos] scenario as JSON: traffic type, lambda knots, length, seed, floors, cars
-  sim/play/HttpReplay.java             [Tassos] plays a generated scenario against a running server, with a speed factor
-  experiment/Experiment.java, ExperimentConfig.java, RequestRecord.java, Summary.java, CsvWriter.java   [Tassos, or a teammate for Summary/CSV]
-  devices/elevator/ElevatorRun.java    [team] use TravelModel for travel time; loop (pull, move, report arrival via POST status, repeat); speed factor; stop creating and starting ElevatorHttpServer
-  devices/keypad/Keypad.java           [team] floor count from config; move scanner.close() out of the loop
-  app/Main.java                        [Tassos] subcommands: brain, demo, replay, experiment
+  dispatch/brain/BrainCore.java        the 3 contract methods + stats, time as a parameter
+  api/BrainServer.java                 real handlers, calls BrainCore
+  api/dto/...                          add optional `time`; add `requestId` and `status` to the ack; add the status record
+  api/BrainApiClient.java              status POST; one shared HttpClient; timeouts
+  timing/Dwell.java                    the dwell formula in one place
+  sim/play/ScenarioSpec.java           scenario as JSON: traffic type, lambda knots, length, seed, floors, cars
+  sim/play/HttpReplay.java             plays a generated scenario against a running server, with a speed factor
+  experiment/Experiment.java, ExperimentConfig.java, RequestRecord.java, Summary.java, CsvWriter.java
+  devices/elevator/ElevatorRun.java    use TravelModel for travel time; loop (pull, move, report arrival via POST status, repeat); speed factor; stop creating and starting ElevatorHttpServer
+  devices/keypad/Keypad.java           floor count from config; move scanner.close() out of the loop
+  app/Main.java                        subcommands: brain, demo, replay, experiment
 ```
 
 Also in phase 2:
