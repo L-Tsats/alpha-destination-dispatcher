@@ -3,6 +3,7 @@ package dispatcher.api;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.Executors;
 
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
@@ -18,12 +19,18 @@ public class BrainServer {
     private final BrainCore brain;
     private final Gson gson = new Gson();
     private final long startNanos = System.nanoTime();
+    private long pollTimeoutMs = 25_000;
 
     public BrainServer(int port, int nFloors, int nCars) throws IOException {
         brain = new BrainCore(nFloors, nCars);
         server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/api/requests", this::handleRequest);
-        server.createContext("/api/elevator", this::handleElevator);
+        server.createContext("/api/elevators/", this::handleElevator);
+
+        // One thread per open request, so a waiting elevator never blocks a keypad request.
+        // Plain threads, not virtual ones: on JDK 21 a virtual thread waiting inside
+        // synchronized stays pinned to its carrier thread.
+        server.setExecutor(Executors.newCachedThreadPool());
     }
 
     public void start() { server.start(); }
@@ -45,6 +52,7 @@ public class BrainServer {
         BrainCore.Ack ack;
         synchronized (brain) {
             ack = brain.submit(req.getFromFloor(), req.getToFloor(), now(), null);
+            brain.notifyAll();
         }
         AssignmentResponse assignment = new AssignmentResponse(ack.elevatorId());
         sendJson(exchange, 200, gson.toJson(assignment));
@@ -74,9 +82,23 @@ public class BrainServer {
             return;
         }
 
+        // Long polling: if there is no stop yet, hold the request open until a keypad
+        // request wakes us (notifyAll in handleRequest) or the timeout passes.
         Integer nextFloor;
         synchronized (brain) {
+            long deadline = System.currentTimeMillis() + pollTimeoutMs;
             nextFloor = brain.nextDestination(elevatorId, now());
+            while (nextFloor == null) {
+                long left = deadline - System.currentTimeMillis();
+                if (left <= 0) break;                 // timed out: answer 204, the elevator asks again
+                try {
+                    brain.wait(left);                 // releases the lock while sleeping
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+                nextFloor = brain.nextDestination(elevatorId, now());
+            }
         }
 
         if (nextFloor == null) {
@@ -102,4 +124,7 @@ public class BrainServer {
             out.write(bytes);
         }
     }
+
+    public void setPollTimeoutMs(long ms) { this.pollTimeoutMs = ms; }
+
 }
