@@ -14,6 +14,7 @@ import static dispatcher.dispatch.eval.Status.BOARDED;
 import static dispatcher.dispatch.eval.Status.DELIVERED;
 import dispatcher.dispatch.eval.Stop;
 import dispatcher.dispatch.search.Search;
+import dispatcher.timing.TravelModel;
 
 public class BrainCore {
     private final int nFloors;
@@ -40,14 +41,17 @@ public class BrainCore {
     private Double reSearchBudgetOverride = null;
     private boolean useInsertionAssignment = true;
 
-    public record Ack(String requestId, String carId, Double wakeAt) {}
+    public record Ack(String requestId, String elevatorId, Double wakeAt) {}
     private record Assignment(CarPlan plan, Insertion interim) {}
+
+    private final double[] travelTable;
 
     public BrainCore(int nFloors, int nCars) {
         this.nFloors = nFloors;
         this.nCars = nCars;
         this.search = new Search(nFloors);
         this.assigner = new InsertionAssigner(nFloors);
+        travelTable = new TravelModel().buildTravelTable(nFloors);
 
         for(int i = 0; i < nCars; i++) {
             Car car = new Car(String.valueOf((char)('A' + i)), 1);
@@ -101,16 +105,6 @@ public class BrainCore {
         this.reSearchEnabled = reSearchEnabled;
     }
 
-    // Temporary: Runner still reads the plans directly while the logic is moved over
-    public LinkedHashMap<String, CarPlan> getCarPlans() {
-        return carPlans;
-    }
-
-    public PlanEvaluation result() {
-        return new PlanEvaluation(waits, journeys);
-    }
-
-
     // Helpers
     public static double dwell(Stop stop) {
         return 4.0 + 1.1 * Math.max(stop.getBoarding().size(), stop.getAlighting().size());
@@ -125,6 +119,14 @@ public class BrainCore {
             return null;
         }
         return plan.getRoute().remove(0);
+    }
+
+    public Car getCar(String carId) {
+        return carPlans.get(carId).getCar();
+    }
+
+    public PlanEvaluation result() {
+        return new PlanEvaluation(waits, journeys);
     }
 
     public double arrived(String carId, Stop stop, double arrival) {
@@ -245,6 +247,21 @@ public class BrainCore {
     private Insertion insertInto(CarPlan p, Request req, double clock) {
         Car c = p.getCar();
         return assigner.best(p.getRoute(), req, c.getDestFloor(), Math.max(clock, c.getNextDecisionTime()));
+    }
+
+    public Integer nextDestination(String carId, double now) {
+        Stop nextStop = nextStop(carId);
+        if (nextStop == null) {
+            return null;
+        }
+
+        double arrival = now + travelTable[Math.abs(nextStop.getFloor() - getCar(carId).getDestFloor())];
+        arrived(carId, nextStop, arrival);
+        return nextStop.getFloor();
+    }
+
+    public boolean hasElevator(String carId) {
+        return carPlans.containsKey(carId);
     }
 
 }

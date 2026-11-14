@@ -4,11 +4,8 @@ import java.util.List;
 import java.util.PriorityQueue;
 
 import dispatcher.dispatch.brain.BrainCore;
-import dispatcher.dispatch.brain.Car;
 import dispatcher.dispatch.eval.PlanEvaluation;
-import dispatcher.dispatch.eval.Stop;
 import dispatcher.sim.traffic.Passenger;
-import dispatcher.timing.TravelModel;
 
 /**
  * Fast, in-process driver of the brain: it owns the clock and the event queue,
@@ -45,7 +42,6 @@ public class Runner {
 
         PriorityQueue<Event> eventLine = new PriorityQueue<>();
         double clock = 0.0;
-        double[] travelTable = new TravelModel().buildTravelTable(nFloors);
 
         for (Passenger passenger : passengers) {
             eventLine.add(new Event(passenger.getTime() * 60, passenger, EventType.KEYPAD_REQUEST, null));
@@ -66,25 +62,17 @@ public class Runner {
                     BrainCore.Ack ack = brain.submit(p.getFromFloor(), p.getToFloor(), clock, nextTime);
 
                     if (ack.wakeAt() != null) {
-                        eventLine.add(new Event(ack.wakeAt(), null, EventType.ELEVATOR_REQUEST, ack.carId()));
+                        eventLine.add(new Event(ack.wakeAt(), null, EventType.ELEVATOR_REQUEST, ack.elevatorId()));
                     }
                 }
                 case ELEVATOR_REQUEST -> {
                     String carId = nextEvent.getCarId();
-
-                    Stop stop = brain.nextStop(carId);
-                    if (stop == null) {
-                        break; // No more stops to make, the car is now idle
+                    if (brain.nextDestination(carId, clock) == null) {
+                        break; // No more stops, the car is now idle
                     }
-
-                    // The runner plays the car: arrival is computed from the OLD destination floor,
-                    // so this must happen before brain.arrived(...) updates it.
-                    Car car = brain.getCarPlans().get(carId).getCar();
-                    double arrival = clock + travelTable[Math.abs(stop.getFloor() - car.getDestFloor())];
-
-                    double nextDecision = brain.arrived(carId, stop, arrival);
-                    eventLine.add(new Event(nextDecision, null, EventType.ELEVATOR_REQUEST, carId));
+                    eventLine.add(new Event(brain.getCar(carId).getNextDecisionTime(), null, EventType.ELEVATOR_REQUEST, carId));
                 }
+
             }
         }
 
