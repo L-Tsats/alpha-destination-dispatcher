@@ -12,18 +12,64 @@ import dispatcher.sim.traffic.Passenger;
 public class RunnerTest {
 
     @Test
-    void heavyPartiesAtOneFloorAreCountedAsAnOverweightDeparture() {
-        // three 250 kg parties, all 3 -> 9; the first wakes the elevator, the other two join it on the way
+    void overweightPartyStepsOutReRequestsAndIsStillServed() {
+        // three 250 kg parties, all 3 -> 9 (at 60, 60.6 and 61.2 s)
+        // first trip: party 1 boards at 3; parties 2 and 3 join at a second stop at 3 -> 750 kg
+        // party 3 (boarded last) steps out, re-requests, and rides on a later trip
         Runner runner = new Runner(40);
         runner.setFixedSearchSeconds(0.0);
-        PlanEvaluation out = runner.run(List.of(
+        PlanEvaluation truth = runner.run(List.of(
             new Passenger(3, 3, 9, 1.00, 250.0),
             new Passenger(3, 3, 9, 1.01, 250.0),
             new Passenger(3, 3, 9, 1.02, 250.0)));
 
-        assertEquals(3, out.getDeliveryWaits().size());        // counting only: everyone still travels
-        assertEquals(750.0, runner.getMaxLoadKg(), 0.001);     // all three together after floor 3
-        assertEquals(1, runner.getOverweightDepartures());     // only that one departure is over 630 kg
+        assertEquals(1, runner.getOverweightChecks());         // one stop was over 630 kg
+        assertEquals(1, runner.getStepOuts());                 // one party stepped out
+        assertEquals(0, runner.getOverweightDepartures());     // nobody left over the rating
+        assertEquals(500.0, runner.getMaxLoadKg(), 0.001);     // two parties is the most that rode
+
+        assertEquals(3, truth.getDeliveryWaits().size());      // every party is delivered exactly once
+        assertEquals(4, runner.getBrainResult().getDeliveryWaits().size());   // brain also counts the stale request
+
+        // a random one of parties 2 and 3 stepped out; its true wait runs from its FIRST press,
+        // so it is longer than the brain's view of its re-request (r-00004)
+        double steppedOutTrueWait = Math.max(
+                truth.getPickupWaits().get("r-00002"), truth.getPickupWaits().get("r-00003"));
+        double brainWaitRerequest = runner.getBrainResult().getPickupWaits().get("r-00004");
+        assertTrue(steppedOutTrueWait > brainWaitRerequest + 25.0);
+    }
+
+    @Test
+    void withTheSwitchOffTheLastNewcomerStepsOut() {
+        Runner runner = new Runner(40);
+        runner.setFixedSearchSeconds(0.0);
+        runner.setRandomStepOut(false);
+        PlanEvaluation truth = runner.run(List.of(
+            new Passenger(3, 3, 9, 1.00, 250.0),
+            new Passenger(3, 3, 9, 1.01, 250.0),
+            new Passenger(3, 3, 9, 1.02, 250.0)));
+
+        // party 3 is last in the boarding list, so it steps out and waits far longer than party 2
+        assertEquals(1, runner.getStepOuts());
+        assertTrue(truth.getPickupWaits().get("r-00003") > truth.getPickupWaits().get("r-00002") + 25.0);
+    }
+
+    @Test
+    void severalPartiesStepOutOneCheckAtATime() {
+        // three 400 kg parties, all 3 -> 9. Trip 1: party 1 alone, then 2 and 3 board together (1200 kg):
+        // check 1 over -> one out (800), check 2 over -> another out (400), check 3 green.
+        // Trip 2: both re-requesters board together (800) -> one out. Trip 3: the last one rides alone.
+        Runner runner = new Runner(40);
+        runner.setFixedSearchSeconds(0.0);
+        PlanEvaluation truth = runner.run(List.of(
+            new Passenger(3, 3, 9, 1.00, 400.0),
+            new Passenger(3, 3, 9, 1.01, 400.0),
+            new Passenger(3, 3, 9, 1.02, 400.0)));
+
+        assertEquals(3, runner.getStepOuts());
+        assertEquals(0, runner.getOverweightDepartures());
+        assertEquals(400.0, runner.getMaxLoadKg(), 0.001);     // never more than one party at a time
+        assertEquals(3, truth.getDeliveryWaits().size());      // and everyone still gets there
     }
 
     @Test
