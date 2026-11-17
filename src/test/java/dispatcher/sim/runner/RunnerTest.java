@@ -12,6 +12,33 @@ import dispatcher.sim.traffic.Passenger;
 public class RunnerTest {
 
     @Test
+    void heavyPartiesAtOneFloorAreCountedAsAnOverweightDeparture() {
+        // three 250 kg parties, all 3 -> 9; the first wakes the elevator, the other two join it on the way
+        Runner runner = new Runner(40);
+        runner.setFixedSearchSeconds(0.0);
+        PlanEvaluation out = runner.run(List.of(
+            new Passenger(3, 3, 9, 1.00, 250.0),
+            new Passenger(3, 3, 9, 1.01, 250.0),
+            new Passenger(3, 3, 9, 1.02, 250.0)));
+
+        assertEquals(3, out.getDeliveryWaits().size());        // counting only: everyone still travels
+        assertEquals(750.0, runner.getMaxLoadKg(), 0.001);     // all three together after floor 3
+        assertEquals(1, runner.getOverweightDepartures());     // only that one departure is over 630 kg
+    }
+
+    @Test
+    void lightPartiesNeverCountAsOverweight() {
+        Runner runner = new Runner(40);
+        runner.setFixedSearchSeconds(0.0);
+        runner.run(List.of(
+            new Passenger(1, 3, 9, 1.00, 80.0),
+            new Passenger(1, 3, 9, 1.01, 80.0)));
+
+        assertEquals(160.0, runner.getMaxLoadKg(), 0.001);
+        assertEquals(0, runner.getOverweightDepartures());
+    }
+
+    @Test
     public void threeHandBuiltRequestsPrintGrowingPlans() {
         // Passenger(count, fromFloor, toFloor, time in MINUTES, weight)
         List<Passenger> passengers = List.of(

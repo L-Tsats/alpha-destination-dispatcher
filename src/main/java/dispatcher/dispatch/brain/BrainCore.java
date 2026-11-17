@@ -40,6 +40,7 @@ public class BrainCore {
     private boolean reSearchEnabled = true;
     private Double reSearchBudgetOverride = null;
     private boolean useInsertionAssignment = true;
+    private Map<String, Stop> lastStops = new HashMap<>();
 
     public record Ack(String requestId, String elevatorId, Double wakeAt) {}
     private record Assignment(CarPlan plan, Insertion interim) {}
@@ -249,6 +250,10 @@ public class BrainCore {
         return assigner.best(p.getRoute(), req, c.getDestFloor(), Math.max(clock, c.getNextDecisionTime()));
     }
 
+    public Stop lastStop(String carId){
+        return lastStops.get(carId);
+    }
+
     public Integer nextDestination(String carId, double now) {
         Stop nextStop = nextStop(carId);
         if (nextStop == null) {
@@ -257,6 +262,7 @@ public class BrainCore {
 
         double arrival = now + travelTable[Math.abs(nextStop.getFloor() - getCar(carId).getDestFloor())];
         arrived(carId, nextStop, arrival);
+        lastStops.put(carId, nextStop);
         return nextStop.getFloor();
     }
 

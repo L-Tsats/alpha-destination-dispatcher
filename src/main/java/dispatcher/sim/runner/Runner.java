@@ -1,10 +1,14 @@
 package dispatcher.sim.runner;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.PriorityQueue;
 
 import dispatcher.dispatch.brain.BrainCore;
 import dispatcher.dispatch.eval.PlanEvaluation;
+import dispatcher.dispatch.eval.Request;
+import dispatcher.dispatch.eval.Stop;
 import dispatcher.sim.traffic.Passenger;
 
 /**
@@ -22,6 +26,11 @@ public class Runner {
     private boolean reSearchEnabled = true;
     private Double reSearchBudgetOverride = null;
     private boolean useInsertionAssignment = true;
+
+    // Ground truth, sim side only: the brain never sees these
+    private double ratingKg = 630.0;          // unverified rating
+    private int overweightDepartures = 0;
+    private double maxLoadKg = 0.0;
 
     public Runner(int nFloors) {
         this(nFloors, 1);
@@ -43,6 +52,12 @@ public class Runner {
         PriorityQueue<Event> eventLine = new PriorityQueue<>();
         double clock = 0.0;
 
+        // The sim's view of reality: which party is behind each request, and what each elevator weighs
+        Map<String, Passenger> passengerById = new HashMap<>();
+        Map<String, Double> loadKg = new HashMap<>();
+        overweightDepartures = 0;
+        maxLoadKg = 0.0;
+
         for (Passenger passenger : passengers) {
             eventLine.add(new Event(passenger.getTime() * 60, passenger, EventType.KEYPAD_REQUEST, null));
         }
@@ -60,6 +75,7 @@ public class Runner {
                     Double nextTime = next == null ? null : next.getTime();
 
                     BrainCore.Ack ack = brain.submit(p.getFromFloor(), p.getToFloor(), clock, nextTime);
+                    passengerById.put(ack.requestId(), p);
 
                     if (ack.wakeAt() != null) {
                         eventLine.add(new Event(ack.wakeAt(), null, EventType.ELEVATOR_REQUEST, ack.elevatorId()));
@@ -70,6 +86,15 @@ public class Runner {
                     if (brain.nextDestination(carId, clock) == null) {
                         break; // No more stops, the car is now idle
                     }
+
+                    // What the weight sensor would read when the doors close at this stop
+                    Stop s = brain.lastStop(carId);
+                    double load = loadKg.getOrDefault(carId, 0.0);
+                    for (Request r : s.getAlighting()) load -= passengerById.get(r.getRequestId()).getWeight();
+                    for (Request r : s.getBoarding())  load += passengerById.get(r.getRequestId()).getWeight();
+                    loadKg.put(carId, load);
+                    maxLoadKg = Math.max(maxLoadKg, load);
+                    if (load > ratingKg) overweightDepartures++;
                     eventLine.add(new Event(brain.getCar(carId).getNextDecisionTime(), null, EventType.ELEVATOR_REQUEST, carId));
                 }
 
@@ -106,6 +131,14 @@ public class Runner {
 
     public double getMaxAssignMs() {
         return brain.getMaxAssignMs();
+    }
+
+    public int getOverweightDepartures() {
+        return overweightDepartures;
+    }
+
+    public double getMaxLoadKg() {
+        return maxLoadKg;
     }
 
     public void setFixedSearchSeconds(Double fixedSearchSeconds) {
