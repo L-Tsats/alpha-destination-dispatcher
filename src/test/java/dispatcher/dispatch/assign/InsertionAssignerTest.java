@@ -69,6 +69,41 @@ class InsertionAssignerTest {
     }
 
     @Test
+    void newPartyJoinsAnExistingStopAtItsFloor() {
+        Request a = new Request("A", 3, 9, 0.0);
+        Request b = new Request("B", 3, 7, 0.0);
+        List<Stop> route = List.of(
+                new Stop(3, List.of(a), List.of()),
+                new Stop(9, List.of(), List.of(a)));
+
+        Insertion result = new InsertionAssigner(40).best(route, b, 1, 0.0);
+
+        // both board at 3 together; [3, 7, 9] totals 52.1 s against 57.7 s for [3, 9, 7]
+        assertEquals(List.of(3, 7, 9), floors(result.getRoute()));
+        assertEquals(2, result.getRoute().get(0).getBoarding().size());
+    }
+
+    @Test
+    void aFullFloorMakesTheElevatorCostlyButStillGivesARoute() {
+        // three parties already wait at floor 5 for this elevator (capacity 3)
+        Request x = new Request("X", 5, 9, 0.0);
+        Request y = new Request("Y", 5, 10, 0.0);
+        Request z = new Request("Z", 5, 11, 0.0);
+        Request d = new Request("D", 5, 12, 0.0);
+        List<Stop> route = List.of(
+                new Stop(5, List.of(x, y, z), List.of()),
+                new Stop(9, List.of(), List.of(x)),
+                new Stop(10, List.of(), List.of(y)),
+                new Stop(11, List.of(), List.of(z)));
+
+        Insertion result = new InsertionAssigner(40).best(route, d, 1, 0.0);
+
+        // a fourth party at 5 boards with the others wherever it is inserted: over capacity
+        assertTrue(result.getCost() >= 1_000_000.0);
+        assertEquals(5, result.getRoute().size());           // still a complete route, no crash
+    }
+
+    @Test
     void insertionNeverBeatsTheFullSearch() {
         Request a = new Request("A", 3, 9, 0.0);
         Request b = new Request("B", 15, 4, 0.0);

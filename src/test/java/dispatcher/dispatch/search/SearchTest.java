@@ -13,9 +13,33 @@ import org.junit.jupiter.api.Test;
 
 import dispatcher.dispatch.eval.PlanEvaluation;
 import dispatcher.dispatch.eval.Request;
+import dispatcher.dispatch.eval.Status;
 import dispatcher.dispatch.eval.Stop;
 
 public class SearchTest {
+
+    @Test
+    void partiesAtTheSameFloorBoardTogether() {
+        Request a = new Request("a", 3, 9, 0.0);
+        Request b = new Request("b", 3, 7, 0.0);
+        List<Stop> route = new Search(40).searchBestroute(List.of(a, b), 1, 0.0);
+
+        assertEquals(3, route.size());                       // [3 (a and b board), 7, 9]
+        assertEquals(3, route.get(0).getFloor());
+        assertEquals(2, route.get(0).getBoarding().size());
+    }
+
+    @Test
+    void riderLeavesWhereTheNextPartyBoards() {
+        Request a = new Request("a", 2, 5, 0.0);
+        a.setStatus(Status.BOARDED);
+        Request b = new Request("b", 5, 9, 0.0);
+        List<Stop> route = new Search(40).searchBestroute(List.of(a, b), 2, 0.0);
+
+        assertEquals(2, route.size());                       // [5 (a off, b on), 9]
+        assertEquals(1, route.get(0).getAlighting().size());
+        assertEquals(1, route.get(0).getBoarding().size());
+    }
 
     @Test
     public void buildsFullPlanPickupNearestFirst() {

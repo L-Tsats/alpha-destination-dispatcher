@@ -12,6 +12,8 @@ import dispatcher.dispatch.eval.Stop;
 
 public class InsertionAssigner {
     private final Evaluator evaluator; // nFloors will be set in evaluateRoute
+    private static final double OVER_CAPACITY_PENALTY = 1_000_000.0; // Large enough that any route that fits always wins over one that doesn't
+
 
     public InsertionAssigner(int nFloors) {
         this.evaluator = new Evaluator(nFloors);
@@ -36,9 +38,11 @@ public class InsertionAssigner {
                     if (k == j) candidate.add(dropoff);
                     if (k < m) candidate.add(route.get(k));
                 }
-                if (!fits(candidate, startLoad)) continue;
+                candidate = mustBoard(candidate);
 
                 double cost = PlanScorer.deliveryTotal(evaluator.evaluate(candidate, startFloor, startTime)) - oldTotal;
+                if (!fits(candidate, startLoad)) cost += OVER_CAPACITY_PENALTY;
+
                 if (cost < bestCost) {          // strict <, so ties keep the earliest position
                     bestCost = cost;
                     bestRoute = candidate;
@@ -70,5 +74,41 @@ public class InsertionAssigner {
         }
         return true;
     }
+
+    // Rebuilds a route the way it really plays out: at each stop's floor, everyone waiting there
+    // boards and everyone riding there gets off. Stops left with nobody are dropped.
+    private List<Stop> mustBoard(List<Stop> stops) {
+        List<Request> waiting = new ArrayList<>();   // will board somewhere in this route
+        List<Request> onboard = new ArrayList<>();   // already in the car before the route starts
+        for (Stop s : stops) waiting.addAll(s.getBoarding());
+        for (Stop s : stops) {
+            for (Request r : s.getAlighting()) {
+                if (!waiting.contains(r) && !onboard.contains(r)) onboard.add(r);
+            }
+        }
+
+        List<Stop> result = new ArrayList<>();
+        for (Stop s : stops) {
+            int f = s.getFloor();
+            List<Request> boarding = new ArrayList<>();
+            List<Request> alighting = new ArrayList<>();
+
+            for (Request r : onboard) {
+                if (r.getToFloor() == f) alighting.add(r);
+            }
+            for (Request r : waiting) {
+                if (r.getFromFloor() == f) boarding.add(r);
+            }
+
+            if (boarding.isEmpty() && alighting.isEmpty()) continue;   // nothing happens here any more
+
+            onboard.removeAll(alighting);
+            waiting.removeAll(boarding);
+            onboard.addAll(boarding);
+            result.add(new Stop(f, boarding, alighting));
+        }
+        return result;
+    }
+
 
 }
