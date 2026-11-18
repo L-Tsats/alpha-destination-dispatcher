@@ -1,17 +1,21 @@
 package dispatcher.devices.keypad;
 import java.util.Scanner;
 
-import dispatcher.api.dto.AssignmentResponse;
 import dispatcher.api.BrainApiClient;
+import dispatcher.api.dto.AssignmentResponse;
 import dispatcher.api.dto.PassengerRequest;
 
 public class Keypad {
-    private int currentFloor;
+    private final int currentFloor;   // the floor this keypad is mounted on
+    private final int nFloors;        // must match the brain's floor count
+    private final BrainApiClient client;
     private KeypadState currentState;
-    private final BrainApiClient client = new BrainApiClient("http://localhost:8080");
 
-    public Keypad(int currentFloor) {
+    // Everything the keypad needs is given here: it never guesses its floor, the building size or the brain's address
+    public Keypad(int currentFloor, int nFloors, String brainUrl) {
         this.currentFloor = currentFloor;
+        this.nFloors = nFloors;
+        this.client = new BrainApiClient(brainUrl);
         this.currentState = KeypadState.INPUTFLOOR;
     }
 
@@ -24,8 +28,8 @@ public class Keypad {
                     System.out.print("Enter destination floor: ");
                     try {
                         int destinationFloor = scanner.nextInt();
-                        if (destinationFloor < 1 || destinationFloor > 10) {
-                            System.out.println("Invalid floor. Please enter a floor between 1 and 10.");
+                        if (destinationFloor < 1 || destinationFloor > nFloors) {
+                            System.out.println("Invalid floor. Please enter a floor between 1 and " + nFloors + ".");
                             continue;
                         }
                         if (destinationFloor == currentFloor) {
@@ -70,17 +74,18 @@ public class Keypad {
                     Thread.sleep(5000); // Simulate maintenance duration
                     break;
             }
-            
-            scanner.close();
         }
     }
 
+    // Launcher for one keypad. Arguments: <keypad floor> <number of floors> [brain URL]
+    // e.g. "3 40" or "3 40 http://localhost:8080"
     public static void main(String[] args) throws InterruptedException {
-        // Δημιουργούμε ένα πληκτρολόγιο που βρίσκεται, για παράδειγμα, στον 3ο όροφο
-        Keypad keypad = new Keypad(3); 
-        
-        // Ξεκινάμε τη μηχανή καταστάσεων (τη while λούπα σου)
-        keypad.start();
+        int floor   = args.length >= 1 ? Integer.parseInt(args[0]) : 2;
+        int nFloors = args.length >= 2 ? Integer.parseInt(args[1]) : 0;
+        String url  = args.length >= 3 ? args[2] : "http://localhost:8080";
+
+        System.out.println("Keypad on floor " + floor + " (" + nFloors + " floors), brain at " + url);
+        new Keypad(floor, nFloors, url).start();
     }
 
 
