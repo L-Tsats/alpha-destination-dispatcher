@@ -27,7 +27,6 @@ public class BrainApiClient {
         this.baseURI = URI.create(url);
     }
 
-
     //Communication with Keypad
 
     public AssignmentResponse submitRequest(PassengerRequest req) throws IOException, InterruptedException {
@@ -76,6 +75,10 @@ public class BrainApiClient {
         HttpClient client = HttpClient.newHttpClient();
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 204) {
+            return null; // The "nothing yet, ask later" block (HTTP 204)
+        }
 
         if (response.statusCode() != 200) {
             throw new IOException(
