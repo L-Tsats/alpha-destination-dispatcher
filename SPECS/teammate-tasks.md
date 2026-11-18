@@ -16,12 +16,17 @@ The server side is ready: `api/BrainServer` with `POST /api/requests` and `GET /
 5. **Remove `ElevatorHttpServer`:** the brain is the only server. Delete the class and stop starting it in `main`.
 6. **Arguments:** elevator id (A, B, ...), start floor (1), brain URL (default `http://localhost:8080`), number of floors.
 
-## Keypad (`devices/keypad/Keypad`)
+## Keypad (`devices/keypad/Keypad`) — REWORK (decided 2026-11-17, Lampis)
 
-1. **Floor range from an argument** (number of floors) instead of the fixed 1..10.
-2. **Bug:** `scanner.close()` is inside the `while (true)` loop, so the second input fails. Create the scanner once and close it after the loop (or never).
-3. **Show the letter:** after a successful request, print "Go to elevator X" from the ack, then return to the floor screen.
-4. **Arguments:** the keypad's own floor, number of floors, brain URL.
+The keypad becomes passive: no loop, no `Scanner`, no state switch.
+1. **Constructor:** `Keypad(floor, nFloors, brainUrl)` (done).
+2. **One method, `press(int destination)`:** check the floor (invalid: return the message), send the request to the brain, return the elevator letter (or a message if the brain is unreachable).
+3. **One keypad per floor**, all pointing at the same brain.
+4. **Input sources are separate and call `press`:**
+   - simulated passengers from the `Generator`, fed in REAL TIME (sleep until each passenger's time, relative to when the feeder starts);
+   - a small console front-end for the live demo (the `Scanner` lives there).
+5. `KeypadState` is no longer control flow; keep it only if a GUI needs a "current screen".
+6. Tests: unit tests for the floor check; a connected test calling `press` against a `BrainServer` on a free port.
 
 ## How to run the whole system by hand
 

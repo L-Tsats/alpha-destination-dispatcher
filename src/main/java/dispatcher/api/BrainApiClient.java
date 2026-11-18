@@ -1,17 +1,16 @@
 package dispatcher.api;
 
-import dispatcher.api.dto.AssignmentResponse;
-import dispatcher.api.dto.NextDestinationResponse;
-import dispatcher.api.dto.PassengerRequest;
-
+import java.io.IOException;
 import java.net.URI;
-import com.sun.net.httpserver.HttpServer;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+
 import com.google.gson.Gson;
 
-import java.io.IOException;
+import dispatcher.api.dto.AssignmentResponse;
+import dispatcher.api.dto.NextDestinationResponse;
+import dispatcher.api.dto.PassengerRequest;
 
 
 public class BrainApiClient {

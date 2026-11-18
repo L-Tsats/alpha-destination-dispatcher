@@ -3,9 +3,11 @@ package dispatcher.api;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.concurrent.Executors;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 
@@ -20,8 +22,10 @@ public class BrainServer {
     private final Gson gson = new Gson();
     private final long startNanos = System.nanoTime();
     private long pollTimeoutMs = 25_000;
+    private final int nFloors;
 
     public BrainServer(int port, int nFloors, int nCars) throws IOException {
+        this.nFloors = nFloors;
         brain = new BrainCore(nFloors, nCars);
         server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/api/requests", this::handleRequest);
@@ -47,7 +51,18 @@ public class BrainServer {
             sendJson(exchange, 405, "{\"error\":\"POST only\"}");
             return;
         }
-        PassengerRequest req = gson.fromJson(readBody(exchange), PassengerRequest.class);
+        PassengerRequest req;
+        try {
+            req = gson.fromJson(readBody(exchange), PassengerRequest.class);
+        } catch (JsonParseException e) {
+            sendJson(exchange, 400, "{\"error\":\"body is not valid JSON\"}");
+            return;
+        }
+        String problem = validate(req);
+        if (problem != null) {
+            sendJson(exchange, 400, gson.toJson(Map.of("error", problem)));
+            return;
+        }
 
         BrainCore.Ack ack;
         synchronized (brain) {
@@ -109,6 +124,17 @@ public class BrainServer {
             sendJson(exchange, 200, gson.toJson(new NextDestinationResponse(nextFloor)));
         }
 
+    }
+
+    // Returns what is wrong with a request, or null if the brain can accept it
+    private String validate(PassengerRequest req) {
+        if (req == null) return "empty request";
+        int from = req.getFromFloor();
+        int to = req.getToFloor();
+        if (from < 1 || from > nFloors) return "fromFloor must be between 1 and " + nFloors;
+        if (to < 1 || to > nFloors)     return "toFloor must be between 1 and " + nFloors;
+        if (from == to)                 return "fromFloor and toFloor must differ";
+        return null;
     }
 
     // --- plumbing ---
