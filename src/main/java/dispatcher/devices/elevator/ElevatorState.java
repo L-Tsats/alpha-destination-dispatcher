@@ -1,4 +1,4 @@
-package dispatcher.sim.elevator;
+package dispatcher.devices.elevator;
 
     public enum ElevatorState {
         IDLE,

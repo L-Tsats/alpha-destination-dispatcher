@@ -1,11 +1,14 @@
 package dispatcher.dispatch.search;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
+import java.util.function.BooleanSupplier;
 
-import dispatcher.dispatch.eval.Evaluator;
+import dispatcher.dispatch.eval.Evaluator; // Used for running it's code to supply values while the search is running!
 import dispatcher.dispatch.eval.PlanEvaluation;
+import dispatcher.dispatch.eval.PlanScorer;
 import dispatcher.dispatch.eval.Request;
 import dispatcher.dispatch.eval.Status;
 import dispatcher.dispatch.eval.Stop;
@@ -18,6 +21,8 @@ public class Search {
 
     private long deadlineNanos = Long.MAX_VALUE;  // "no limit" by default
     private boolean aborted;
+
+    private BooleanSupplier cancelCheck = () -> false;   // default: never cancel
 
     private int startFloor;
     private double currentTime;
@@ -63,7 +68,7 @@ public class Search {
 
         if(toPickup.isEmpty() && onboard.isEmpty()) {
             PlanEvaluation planEval = evaluator.evaluate(stopsSoFar, startFloor, currentTime);
-            double score = score(planEval);
+            double score = PlanScorer.deliveryMean(planEval);
             if (score < bestScore) {
                 bestScore = score;
                 bestRoute = List.copyOf(stopsSoFar);
@@ -76,49 +81,46 @@ public class Search {
 
     }
 
-    private double score(PlanEvaluation plan) {
-        double sum = 0;
-        int count = 0;
-        for (Map.Entry<String, Double> wait : plan.getDeliveryWaits().entrySet()) {
-            sum += wait.getValue();
-            count ++;
-        }
-        
-        if (count == 0) return 0;
-        return sum / count;
-    }
+    private void recurseValidCases(List<Stop> stopsSoFar, List<Request> toPickup, List<Request> onboard) {
+        // every floor where something can happen next, each floor once
+        Set<Integer> floors = new LinkedHashSet<>();
+        for (Request r : toPickup) floors.add(r.getFromFloor());
+        for (Request r : onboard)  floors.add(r.getToFloor());
 
-    private void recurseValidCases (List<Stop> stopsSoFar, List<Request> toPickup, List<Request> onboard) {
+        for (int f : floors) {
+            List<Request> boarding = new ArrayList<>();
+            List<Request> alighting = new ArrayList<>();
 
-        if (onboard.size() < K) {
-            for(Request req : toPickup) {
-
-                List<Stop> nextStops = new ArrayList<>(stopsSoFar);
-                List<Request> boarding = new ArrayList<>();
-                boarding.add(req);
-                nextStops.add(new Stop(req.getFromFloor(), boarding, new ArrayList<>()));
-
-                List<Request> nextToPickup = new ArrayList<>(toPickup);
-                nextToPickup.remove(req);  
-                List<Request> nextOnboard = new ArrayList<>(onboard);
-                nextOnboard.add(req);
-
-                search(nextStops, nextToPickup, nextOnboard);
-                
+            // TODO 1: add every request in toPickup whose pickup floor is f to boarding
+            for(Request r : toPickup) {
+                if(r.getFromFloor() == f) {
+                    boarding.add(r);
+                }
             }
-        }
+            // TODO 2: add every request in onboard whose destination floor is f to alighting
+            for(Request r : onboard) {
+                if(r.getToFloor() == f) {
+                    alighting.add(r);
+                }
+            }
 
-        for (Request req : onboard) {
+            // capacity after this stop (replaces the old "onboard.size() < K" check)
+            if (onboard.size() - alighting.size() + boarding.size() > K) continue;
+
             List<Stop> nextStops = new ArrayList<>(stopsSoFar);
-            nextStops.add(new Stop(req.getToFloor(), new ArrayList<>(), List.of(req)));
+            nextStops.add(new Stop(f, boarding, alighting));
+
+            List<Request> nextToPickup = new ArrayList<>(toPickup);
+            nextToPickup.removeAll(boarding);
 
             List<Request> nextOnboard = new ArrayList<>(onboard);
-            nextOnboard.remove(req);
+            nextOnboard.removeAll(alighting);
+            nextOnboard.addAll(boarding);
 
-            search(nextStops, new ArrayList<>(toPickup), nextOnboard);
+            search(nextStops, nextToPickup, nextOnboard);
         }
-        
     }
+
 
     public List<Stop> getBestRoute() {
         return bestRoute;
@@ -132,12 +134,17 @@ public class Search {
         return bestplPlanEvaluation;
     }
 
+    public void setCancelCheck(BooleanSupplier cancelCheck) {
+        this.cancelCheck = cancelCheck;
+    }
+
     private boolean timeIsUp() {
-        if (!aborted && System.nanoTime() > deadlineNanos) {
+        if (!aborted && System.nanoTime() > deadlineNanos || cancelCheck.getAsBoolean()) {
             aborted = true;
         }
         return aborted;
     }
 
     public boolean wasAborted() { return aborted; }
+    
 }

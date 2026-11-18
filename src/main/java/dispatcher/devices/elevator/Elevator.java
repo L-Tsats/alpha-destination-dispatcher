@@ -1,10 +1,10 @@
 
-package dispatcher.sim.elevator;
+package dispatcher.devices.elevator;
 
 import java.io.IOException;
 
-import dispatcher.sim.http.BrainApiClient;
-import dispatcher.sim.http.ElevatorHttpServer;
+import dispatcher.api.BrainApiClient;
+
 
 public class Elevator {
 
@@ -12,6 +12,7 @@ public class Elevator {
     private String id;
     private ElevatorState currentState;
     private int targetFloor;
+    
     
     public Elevator(String id, int startingFloor) {
         this.id = id;

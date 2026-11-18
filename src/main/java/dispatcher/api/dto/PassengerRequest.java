@@ -1,4 +1,4 @@
-package dispatcher.sim.http;
+package dispatcher.api.dto;
 
 public class PassengerRequest {
 

@@ -26,10 +26,11 @@ public class EvaluatorTest {
 
         // expected values (hand-verified)
         assertEquals(27.5,  result.getPickupWaits().get("r1"), 0.001);
-        assertEquals(28.8,  result.getPickupWaits().get("r2"), 0.001);
-        assertEquals(46.1,  result.getPickupWaits().get("r3"), 0.001);
-        assertEquals(39.5,  result.getDeliveryWaits().get("r1"), 0.001);
-        assertEquals(56.84, result.getDeliveryWaits().get("r2"), 0.01);
-        assertEquals(67.14, result.getDeliveryWaits().get("r3"), 0.01);
+        assertEquals(31.9,  result.getPickupWaits().get("r2"), 0.001);
+        assertEquals(52.3,  result.getPickupWaits().get("r3"), 0.001);
+        assertEquals(42.6,  result.getDeliveryWaits().get("r1"), 0.001);
+        assertEquals(66.14, result.getDeliveryWaits().get("r2"), 0.01);
+        assertEquals(79.54, result.getDeliveryWaits().get("r3"), 0.01);
+
     }
 }

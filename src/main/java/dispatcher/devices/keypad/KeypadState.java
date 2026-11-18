@@ -1,4 +1,4 @@
-package dispatcher.keypad;
+package dispatcher.devices.keypad;
 
 public enum KeypadState {
     INPUTFLOOR,

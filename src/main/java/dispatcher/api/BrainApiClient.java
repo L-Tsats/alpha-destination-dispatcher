@@ -1,13 +1,16 @@
-package dispatcher.sim.http;
+package dispatcher.api;
 
+import java.io.IOException;
 import java.net.URI;
-import com.sun.net.httpserver.HttpServer;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+
 import com.google.gson.Gson;
 
-import java.io.IOException;
+import dispatcher.api.dto.AssignmentResponse;
+import dispatcher.api.dto.NextDestinationResponse;
+import dispatcher.api.dto.PassengerRequest;
 
 
 public class BrainApiClient {
@@ -23,7 +26,6 @@ public class BrainApiClient {
             : brainURL + "/";
         this.baseURI = URI.create(url);
     }
-
 
     //Communication with Keypad
 
@@ -73,6 +75,10 @@ public class BrainApiClient {
         HttpClient client = HttpClient.newHttpClient();
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 204) {
+            return null; // The "nothing yet, ask later" block (HTTP 204)
+        }
 
         if (response.statusCode() != 200) {
             throw new IOException(

@@ -1,4 +1,4 @@
-package dispatcher.sim.runner;
+package dispatcher.dispatch.brain;
 
 public class Car {
     private final String id;
