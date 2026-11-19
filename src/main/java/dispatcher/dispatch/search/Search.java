@@ -28,10 +28,13 @@ public class Search {
     private double currentTime;
 
     private final int K = 3; // To-be-replaced with actual car-weight checking
-
+    
     public Search(int nFloors) {
         evaluator  = new Evaluator(nFloors);
     }
+
+
+
 
     public List<Stop> searchBestroute(List<Request> requests, int startFloor, double currentTime, double budgetSeconds) {
         bestplPlanEvaluation = null;
