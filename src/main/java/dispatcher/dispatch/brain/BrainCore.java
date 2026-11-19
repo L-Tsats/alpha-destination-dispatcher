@@ -14,6 +14,7 @@ import static dispatcher.dispatch.eval.Status.BOARDED;
 import static dispatcher.dispatch.eval.Status.DELIVERED;
 import dispatcher.dispatch.eval.Stop;
 import dispatcher.dispatch.search.Search;
+import dispatcher.timing.Dwell;
 import dispatcher.timing.TravelModel;
 
 public class BrainCore {
@@ -108,9 +109,6 @@ public class BrainCore {
     }
 
     // Helpers
-    public static double dwell(Stop stop) {
-        return 4.0 + 1.1 * Math.max(stop.getBoarding().size(), stop.getAlighting().size());
-    }
 
     public Stop nextStop(String carId) {
         CarPlan plan = carPlans.get(carId);
@@ -145,11 +143,11 @@ public class BrainCore {
             r.setStatus(DELIVERED);
         }
 
-        car.setNextDecisionTime(arrival + dwell(stop));
+        car.setNextDecisionTime(arrival + Dwell.SECONDS);
 
         if(reSearchEnabled && plan.isSearchIncomplete()) {
             long t1 = System.nanoTime();
-            double reBudget = reSearchBudgetOverride != null ? reSearchBudgetOverride : dwell(stop);
+            double reBudget = reSearchBudgetOverride != null ? reSearchBudgetOverride : Dwell.SECONDS;
             List<Stop> result = search.searchBestroute(plan.getRequests(), car.getDestFloor(), arrival, reBudget);
 
             double reMs = (System.nanoTime() - t1) / 1_000_000.0;

@@ -26,8 +26,8 @@ class InsertionAssignerTest {
         Insertion result = assigner.best(List.of(), a, 1, 0.0);
 
         assertEquals(List.of(3, 9), floors(result.getRoute()));
-        // wait 5.8 + dwell 5.1 + 6 floors 11.4 = 22.3
-        assertEquals(22.3, result.getCost(), 0.001);
+        // wait 5.8 + dwell 8 + 6 floors 11.4 = 25.2
+        assertEquals(25.2, result.getCost(), 0.001);
     }
 
     @Test
@@ -41,9 +41,10 @@ class InsertionAssignerTest {
 
         Insertion result = assigner.best(route, b, 1, 0.0);
 
-        // B rides inside A's trip: A journey 38.5 + B journey 27.6 = 66.1, versus 22.3 alone
+        // B rides inside A's trip: A journey 47.2 + B journey 33.4 = 80.6, versus 25.2 alone
+        // (next best: [5,7,3,9] and [3,9,5,7], both 80.8)
         assertEquals(List.of(3, 5, 7, 9), floors(result.getRoute()));
-        assertEquals(43.8, result.getCost(), 0.001);
+        assertEquals(55.4, result.getCost(), 0.001);
         assertEquals(2, route.size());   // the input route is untouched
     }
 
@@ -78,7 +79,7 @@ class InsertionAssignerTest {
 
         Insertion result = new InsertionAssigner(40).best(route, b, 1, 0.0);
 
-        // both board at 3 together; [3, 7, 9] totals 52.1 s against 57.7 s for [3, 9, 7]
+        // both board at 3 together; [3, 7, 9] totals 58.6 s against 64.2 s for [3, 9, 7]
         assertEquals(List.of(3, 7, 9), floors(result.getRoute()));
         assertEquals(2, result.getRoute().get(0).getBoarding().size());
     }

@@ -35,7 +35,7 @@ Already there, keep: `Elevator` (id, current floor, target floor, state), `Eleva
 3. **204 in `BrainApiClient.getNextDest`:** if the status is 204, return `null`. Keep throwing `IOException` on anything else that is not 200.
 4. **Fix the same-floor early return in `movetoFloor`:** skip only the MOVING part. The doors must still open, otherwise a pickup at the elevator's current floor is silently ignored.
 5. **Travel time from `TravelModel`:** build `new TravelModel().buildTravelTable(nFloors)` once in the constructor. The whole move takes `table[distance]` seconds; spread it across the floors passed for the prints.
-6. **Doors:** one fixed dwell for now (the current 4 s is fine). The door model (try to close after 8 s, retry every 3 s) comes later.
+6. **Doors:** open, wait a fixed 8 s, close. No retry loop (decided 2026-11-18: nothing can tell the elevator how long people take, so it always waits 8 s). The brain predicts 5.1 s for one party; the difference corrects itself at every pull, because the brain computes each arrival from the moment the elevator actually asks.
 7. **Prefix every print with the id**, e.g. `[A] passing floor 4`, so several elevators in one console stay readable.
 8. **Delete `ElevatorRun.main` and `ElevatorHttpServer.java`:** the brain is the only server.
 
@@ -85,5 +85,6 @@ Not in the elevator, on purpose: who boards or gets off (the brain decides; the 
 ## Later (after this works)
 
 - Weight report from the elevator (`POST status`), stored for the metrics.
-- Door model (8 s, retry every 3 s).
+- Door retry model (retry every 3 s if interrupted) once a people simulation can say who is still passing.
+- `timing/Dwell`: one dwell setting, so the server can predict 8 s while the sim keeps its formula (the formula is currently duplicated in `BrainCore.dwell` and `Evaluator`).
 - Non-immediate mode with the web app / lobby screen. Both modes stay functional; see `parked-ideas.md` sections 1 and 5.

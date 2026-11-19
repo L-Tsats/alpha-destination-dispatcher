@@ -104,8 +104,9 @@ public class RunnerTest {
         runner.setFixedSearchSeconds(0.0);
         PlanEvaluation result = runner.run(passengers);
 
+        // arrive at 3 at 60 + 5.8 = 65.8 -> wait 5.8; dwell 8 -> 73.8, +11.4 travel -> 85.2 -> journey 25.2
         assertEquals(5.8, result.getPickupWaits().get("r-00001"), 0.001);
-        assertEquals(22.3, result.getDeliveryWaits().get("r-00001"), 0.001);
+        assertEquals(25.2, result.getDeliveryWaits().get("r-00001"), 0.001);
     }
 
     @Test
@@ -121,9 +122,9 @@ public class RunnerTest {
         PlanEvaluation result = runner.run(passengers);
 
         // second passenger: same floor as the car, gap 0 -> wait 0
-        // dwell 5.1, then gap 6 = 11.4 s -> arrives at 300 + 5.1 + 11.4 = 316.5 -> journey 16.5
+        // dwell 8, then gap 6 = 11.4 s -> arrives at 300 + 8 + 11.4 = 319.4 -> journey 19.4
         assertEquals(0.0, result.getPickupWaits().get("r-00002"), 0.001);
-        assertEquals(16.5, result.getDeliveryWaits().get("r-00002"), 0.001);
+        assertEquals(19.4, result.getDeliveryWaits().get("r-00002"), 0.001);
     }
 
     @Test
@@ -137,13 +138,14 @@ public class RunnerTest {
         runner.setFixedSearchSeconds(0.0);
         PlanEvaluation result = runner.run(passengers);
 
-        // A: car reaches 3 at 65.8 -> wait 5.8 (committed before B arrives)
+        // A: car reaches 3 at 65.8 -> wait 5.8 (committed before B arrives), leaves 3 at 73.8
         assertEquals(5.8, result.getPickupWaits().get("r-00001"), 0.001);
-        // B is picked up at 5 (arrival 76.7) and dropped at 7 (87.6) BEFORE A's dropoff at 9
-        assertEquals(13.7, result.getPickupWaits().get("r-00002"), 0.001);
-        assertEquals(24.6, result.getDeliveryWaits().get("r-00002"), 0.001);
-        // A's dropoff at 9 is delayed to 98.5 -> journey 38.5 (it would be 22.3 without B)
-        assertEquals(38.5, result.getDeliveryWaits().get("r-00001"), 0.001);
+        // B is picked up at 5 (arrival 79.6) and dropped at 7 (93.4) BEFORE A's dropoff at 9
+        // (from 3: [5,7,9] sums to 53.0 s against 53.2 s for [9,5,7], so B first wins narrowly)
+        assertEquals(16.6, result.getPickupWaits().get("r-00002"), 0.001);
+        assertEquals(30.4, result.getDeliveryWaits().get("r-00002"), 0.001);
+        // A's dropoff at 9 is delayed to 107.2 -> journey 47.2 (it would be 25.2 without B)
+        assertEquals(47.2, result.getDeliveryWaits().get("r-00001"), 0.001);
     }
 
     @Test
@@ -184,13 +186,14 @@ public class RunnerTest {
         ));
 
         assertEquals(3, runner.getOverdueSearches());
-        assertEquals(22.3, result.getDeliveryWaits().get("r-00001"), 0.01);
+        assertEquals(25.2, result.getDeliveryWaits().get("r-00001"), 0.01);
 
-        // after the re-search the car serves C (10 -> 12) before B (20 -> 25)
-        assertEquals(27.6417, result.getPickupWaits().get("r-00003"), 0.01);
-        assertEquals(38.5417, result.getDeliveryWaits().get("r-00003"), 0.01);
-        assertEquals(58.8417, result.getPickupWaits().get("r-00002"), 0.01);
-        assertEquals(73.9417, result.getDeliveryWaits().get("r-00002"), 0.01);
+        // the car serves C (10 -> 12) before B (20 -> 25):
+        // 9 at 85.2, leave 93.2; 10 at 97.4417; 12 at 111.2417; 20 at 133.4417; 25 at 151.4417
+        assertEquals(33.4417, result.getPickupWaits().get("r-00003"), 0.01);
+        assertEquals(47.2417, result.getDeliveryWaits().get("r-00003"), 0.01);
+        assertEquals(70.4417, result.getPickupWaits().get("r-00002"), 0.01);
+        assertEquals(88.4417, result.getDeliveryWaits().get("r-00002"), 0.01);
     }
 
     @Test
@@ -219,12 +222,13 @@ public class RunnerTest {
                 new Passenger(1, 5, 7, 1.05, 80.0)));  // r-00002 at 63 s -> car B
 
         assertEquals(5.8, result.getPickupWaits().get("r-00001"), 0.001);
-        assertEquals(22.3, result.getDeliveryWaits().get("r-00001"), 0.001);
+        assertEquals(25.2, result.getDeliveryWaits().get("r-00001"), 0.001);
 
         // B starts idle at floor 1: pickup at 5 is gap 4 = 8.6 s
+        // (B costs 22.4 s extra journey, A would cost 52.4 s, so B wins)
         assertEquals(8.6, result.getPickupWaits().get("r-00002"), 0.001);
-        // 63 + 8.6 = 71.6, dwell 5.1 -> 76.7, then gap 2 = 5.8 -> 82.5, so journey 19.5
-        assertEquals(19.5, result.getDeliveryWaits().get("r-00002"), 0.001);
+        // 63 + 8.6 = 71.6, dwell 8 -> 79.6, then gap 2 = 5.8 -> 85.4, so journey 22.4
+        assertEquals(22.4, result.getDeliveryWaits().get("r-00002"), 0.001);
     }
 
     @Test

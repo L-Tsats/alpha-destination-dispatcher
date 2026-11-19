@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import dispatcher.timing.Dwell;
 import dispatcher.timing.TravelModel;
 
 public class Evaluator {
@@ -32,7 +33,7 @@ public class Evaluator {
                 deliveryWaits.put(deliveryRequest.getRequestId(), (clock - deliveryRequest.getArrivalTime()));
             }
 
-            clock += 4.0 + 1.1 * Math.max(stop.getBoarding().size(), stop.getAlighting().size()); // Simulated dwell time
+            clock += Dwell.SECONDS;
         }
 
         return new PlanEvaluation(pickupWaits, deliveryWaits);

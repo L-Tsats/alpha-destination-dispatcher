@@ -24,13 +24,14 @@ public class EvaluatorTest {
         Evaluator ev = new Evaluator(40);
         PlanEvaluation result = ev.evaluate(plan, 17, 20.3);
 
-        // expected values (hand-verified)
+        // expected values (hand-verified, dwell 8 s):
+        // 20 at 27.5 | 15 at 45.5 | 3 at 73.3 | 2 at 85.5417 | 9 at 106.3417
         assertEquals(27.5,  result.getPickupWaits().get("r1"), 0.001);
-        assertEquals(31.9,  result.getPickupWaits().get("r2"), 0.001);
-        assertEquals(52.3,  result.getPickupWaits().get("r3"), 0.001);
-        assertEquals(42.6,  result.getDeliveryWaits().get("r1"), 0.001);
-        assertEquals(66.14, result.getDeliveryWaits().get("r2"), 0.01);
-        assertEquals(79.54, result.getDeliveryWaits().get("r3"), 0.01);
+        assertEquals(34.8,  result.getPickupWaits().get("r2"), 0.001);
+        assertEquals(58.1,  result.getPickupWaits().get("r3"), 0.001);
+        assertEquals(45.5,  result.getDeliveryWaits().get("r1"), 0.001);
+        assertEquals(74.84, result.getDeliveryWaits().get("r2"), 0.01);
+        assertEquals(91.14, result.getDeliveryWaits().get("r3"), 0.01);
 
     }
 }
