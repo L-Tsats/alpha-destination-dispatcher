@@ -67,6 +67,21 @@ public class Runner {
         brain.setReSearchEnabled(reSearchEnabled);
         brain.setUseInsertionAssignment(useInsertionAssignment);
 
+        return executeSimulation(passengers);
+    }
+
+    /**
+     * Backward-compatible run method that uses the original Search algorithm by default.
+     */
+    public PlanEvaluation run(List<Passenger> passengers) {
+        return run(passengers, false);
+    }
+
+    /**
+     * Core simulation logic, extracted to avoid duplication.
+     */
+    private PlanEvaluation executeSimulation(List<Passenger> passengers) {
+
         PriorityQueue<Event> eventLine = new PriorityQueue<>();
         double clock = 0.0;
 
