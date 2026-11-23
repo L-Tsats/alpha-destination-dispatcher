@@ -1,5 +1,0 @@
-The quick brown fox
-jumps over
-the lazy dog.
-This file has five lines.
-Last one!

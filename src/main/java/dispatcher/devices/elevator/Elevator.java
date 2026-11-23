@@ -1,24 +1,18 @@
 
 package dispatcher.devices.elevator;
 
-import java.io.IOException;
-
-import dispatcher.api.BrainApiClient;
-
 
 public class Elevator {
 
     private int currentFloor;
     private String id;
     private ElevatorState currentState;
-    private int targetFloor;
     
     
     public Elevator(String id, int startingFloor) {
         this.id = id;
         this.currentFloor = startingFloor;
         this.currentState = ElevatorState.IDLE;
-        this.targetFloor = startingFloor;
     }
 
     public String getId() {
@@ -31,14 +25,6 @@ public class Elevator {
 
     public ElevatorState getCurrentState() {
         return currentState;
-    }
-
-    public int getTargetFloor() {
-        return targetFloor;
-    }
-
-    public void setTargetFloor(int floor) {
-    this.targetFloor = floor;
     }
 
     public void setCurrentFloor(int floor) {

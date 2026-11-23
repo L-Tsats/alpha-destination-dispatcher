@@ -11,7 +11,7 @@ One launcher builds the whole building. Devices have NO `main` of their own; the
 ```
 app/Main (launcher)
   1. start BrainServer on 8080
-  2. for each elevator A, B, ...: new Thread(new ElevatorRun(id, nFloors, brainUrl)).start()
+  2. for each elevator A, B, ...: new Thread(new ElevatorController(id, nFloors, brainUrl)).start()
   3. new KeypadFeeder(nFloors, brainUrl, passengers).run()
 ```
 
@@ -23,27 +23,25 @@ app/Main (launcher)
 
 ## A. The elevator (`devices/elevator`)
 
-Already there, keep: `Elevator` (id, current floor, target floor, state), `ElevatorState`, `ElevatorRun.movetoFloor(target)`, `BrainApiClient.getNextDest(id)`.
+Done: `ElevatorController(id, nFloors, brainUrl)` (starts at floor 1), travel time from `TravelModel`, fixed 8 s doors (matches the brain's `Dwell.SECONDS`), `ElevatorHttpServer` deleted, 204 handled in `BrainApiClient.getNextDest` (returns `null`), `targetFloor` removed from `Elevator`, current floor updated on arrival.
 
-1. **Constructor:** `ElevatorRun(String id, int nFloors, String brainUrl)` creates its own `Elevator(id, 1)` and its own `BrainApiClient(brainUrl)`. Always starts at floor 1 (the brain assumes it).
-2. **Make it a thread:** `ElevatorRun implements Runnable`. `run()` loops forever:
-   - ask `getNextDest(id)`;
-   - if the answer is `null`: ask again straight away;
-   - otherwise `movetoFloor(floor)`;
-   - catch `IOException` (brain down): print it, sleep 2 s, continue;
-   - catch `InterruptedException`: stop the loop.
-3. **204 in `BrainApiClient.getNextDest`:** if the status is 204, return `null`. Keep throwing `IOException` on anything else that is not 200.
-4. **Fix the same-floor early return in `movetoFloor`:** skip only the MOVING part. The doors must still open, otherwise a pickup at the elevator's current floor is silently ignored.
-5. **Travel time from `TravelModel`:** build `new TravelModel().buildTravelTable(nFloors)` once in the constructor. The whole move takes `table[distance]` seconds; spread it across the floors passed for the prints.
-6. **Doors:** open, wait a fixed 8 s, close. No retry loop (decided 2026-11-18: nothing can tell the elevator how long people take, so it always waits 8 s). The brain predicts 5.1 s for one party; the difference corrects itself at every pull, because the brain computes each arrival from the moment the elevator actually asks.
-7. **Prefix every print with the id**, e.g. `[A] passing floor 4`, so several elevators in one console stay readable.
-8. **Delete `ElevatorRun.main` and `ElevatorHttpServer.java`:** the brain is the only server.
+Left: only `ElevatorController.java`, marked with TODO 1-4 in the file. Nothing else needs opening.
+1. **TODO 1 (in `run()`):** if `answer` is `null` (HTTP 204, nothing to do yet), `continue` to ask again.
+2. **TODO 2 (in `run()`):** otherwise go there: `moveToFloor(answer.nextFloor());`
+3. **TODO 3 (in `moveToFloor`):** a pickup at the floor the elevator is already on must still open the doors. Delete the early `return`; put the moving part inside `if (targetFloor != elevator.getCurrentFloor()) { ... }` instead.
+4. **TODO 4:** start every print with `"[" + elevator.getId() + "] "`, so several elevators in one console stay readable.
+
+What you need to know, nothing more:
+- `client.getNextDest(id)` returns the next floor, or `null` if there is nothing to do yet. The call itself waits up to about 25 s.
+- `answer.nextFloor()` reads the floor out of the answer.
+- `moveToFloor(floor)` does the whole trip, doors included.
+- The try/catch around the loop is already written: brain down means wait 2 s and retry; interrupted means stop.
 
 Not in the elevator, on purpose: who boards or gets off (the brain decides; the elevator only knows floors), weight, a start floor other than 1.
 
 ## B. Test the elevator on its own
 
-9. **By hand:** start `app/Main`, start one elevator with `new Thread(new ElevatorRun("A", 40, "http://localhost:8080")).start()` (temporary main or a test), then send:
+9. **By hand:** start `app/Main`, start one elevator with `new Thread(new ElevatorController("A", 40, "http://localhost:8080")).start()` (temporary main or a test), then send:
    ```powershell
    Invoke-RestMethod -Method Post -Uri http://localhost:8080/api/requests -ContentType 'application/json' -Body '{"fromFloor":3,"toFloor":9}'
    ```
@@ -57,7 +55,7 @@ Not in the elevator, on purpose: who boards or gets off (the brain decides; the 
 
 ## D. The launcher
 
-13. **`app/Main` (Lampis):** read the floor count, the elevator count and the brain URL once. Start `BrainServer`, start one `ElevatorRun` thread per elevator (A, B, ...), then run `KeypadFeeder` with a passenger list (hand-made first, then from the `Generator`). If the feeder is not pushed yet: brain + elevators only, requests with `Invoke-RestMethod`.
+13. **`app/Main` (Lampis):** read the floor count, the elevator count and the brain URL once. Start `BrainServer`, start one `ElevatorController` thread per elevator (A, B, ...), then run `KeypadFeeder` with a passenger list (hand-made first, then from the `Generator`). If the feeder is not pushed yet: brain + elevators only, requests with `Invoke-RestMethod`.
 
 ## E. End-to-end run
 
