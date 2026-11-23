@@ -58,8 +58,9 @@ public class Runner {
         this.totalCars = totalCars;
     }
 
-    public PlanEvaluation run(List<Passenger> passengers) {
+    public PlanEvaluation run(List<Passenger> passengers, boolean directionalSearch) {
         brain = new BrainCore(nFloors, totalCars);
+        brain.setDirectionalSearch(directionalSearch);
         brain.setFixedSearchSeconds(fixedSearchSeconds);
         brain.setBudgetOverride(budgetOverride);
         brain.setReSearchBudgetOverride(reSearchBudgetOverride);

@@ -21,6 +21,7 @@ public class BrainCore {
     private final int nCars;
     private final LinkedHashMap<String, CarPlan> carPlans = new LinkedHashMap<>();
     private final Search search;
+    private final DirectionalSearch directionalSearch;
     private final InsertionAssigner assigner;
 
     private int requestCounter = 0;
@@ -42,6 +43,8 @@ public class BrainCore {
     private boolean useInsertionAssignment = true;
     private final Map<String, Stop> lastStops = new HashMap<>();
     private final Map<String, Double> lastArrivals = new HashMap<>();
+
+    private boolean useDirectionalSearch = false;
 
     public record Ack(String requestId, String elevatorId, Double wakeAt) {}
     private record Assignment(CarPlan plan, Insertion interim) {}
@@ -87,6 +90,9 @@ public class BrainCore {
     }
 
     // Configuration setters
+    public setDirectionalSearch(boolen x){
+        this.useDirectionalSearch = x;
+    }
     public void setFixedSearchSeconds(Double fixedSearchSeconds) {
         this.fixedSearchSeconds = fixedSearchSeconds;
     }
@@ -150,8 +156,11 @@ public class BrainCore {
         if(reSearchEnabled && plan.isSearchIncomplete()) {
             long t1 = System.nanoTime();
             double reBudget = reSearchBudgetOverride != null ? reSearchBudgetOverride : dwell(stop);
-            List<Stop> result = search.searchBestroute(plan.getRequests(), car.getDestFloor(), arrival, reBudget);
-
+            if(useDirectionalSearch){
+                List<Stop> result = directionalSearch.getSuboptimalStops(plan.getRequests(), car.getDestFloor());
+            }else{
+                List<Stop> result = search.searchBestroute(plan.getRequests(), car.getDestFloor(), arrival, reBudget);
+            }
             double reMs = (System.nanoTime() - t1) / 1_000_000.0;
             totalSearchMs += reMs;
             maxSearchMs = Math.max(maxSearchMs, reMs);
