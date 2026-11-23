@@ -13,6 +13,7 @@ import dispatcher.dispatch.eval.Request;
 import static dispatcher.dispatch.eval.Status.BOARDED;
 import static dispatcher.dispatch.eval.Status.DELIVERED;
 import dispatcher.dispatch.eval.Stop;
+import dispatcher.dispatch.search.DirectionalSearch;
 import dispatcher.dispatch.search.Search;
 import dispatcher.timing.Dwell;
 import dispatcher.timing.TravelModel;
@@ -22,6 +23,7 @@ public class BrainCore {
     private final int nCars;
     private final LinkedHashMap<String, CarPlan> carPlans = new LinkedHashMap<>();
     private final Search search;
+    private final DirectionalSearch directionalSearch;
     private final InsertionAssigner assigner;
 
     private int requestCounter = 0;
@@ -44,6 +46,8 @@ public class BrainCore {
     private final Map<String, Stop> lastStops = new HashMap<>();
     private final Map<String, Double> lastArrivals = new HashMap<>();
 
+    private boolean useDirectionalSearch = false;
+
     public record Ack(String requestId, String elevatorId, Double wakeAt) {}
     private record Assignment(CarPlan plan, Insertion interim) {}
 
@@ -53,6 +57,7 @@ public class BrainCore {
         this.nFloors = nFloors;
         this.nCars = nCars;
         this.search = new Search(nFloors);
+        this.directionalSearch = new DirectionalSearch();
         this.assigner = new InsertionAssigner(nFloors);
         travelTable = new TravelModel().buildTravelTable(nFloors);
 
@@ -88,6 +93,13 @@ public class BrainCore {
     }
 
     // Configuration setters
+    public void setDirectionalSearch(boolean useDirectional) {
+        this.useDirectionalSearch = useDirectional;
+        if (useDirectional) {
+            // Reset directions when switching to DirectionalSearch mode
+            directionalSearch.resetAllDirections();
+        }
+    }
     public void setFixedSearchSeconds(Double fixedSearchSeconds) {
         this.fixedSearchSeconds = fixedSearchSeconds;
     }
@@ -148,15 +160,18 @@ public class BrainCore {
         if(reSearchEnabled && plan.isSearchIncomplete()) {
             long t1 = System.nanoTime();
             double reBudget = reSearchBudgetOverride != null ? reSearchBudgetOverride : Dwell.SECONDS;
-            List<Stop> result = search.searchBestroute(plan.getRequests(), car.getDestFloor(), arrival, reBudget);
 
+            
+            List<Stop> result = computeRoute(plan.getRequests(), car.getDestFloor(), arrival, reBudget, carId);
+            
             double reMs = (System.nanoTime() - t1) / 1_000_000.0;
             totalSearchMs += reMs;
             maxSearchMs = Math.max(maxSearchMs, reMs);
 
             if(result != null) {
                 plan.setRoute(new ArrayList<>(result));
-                plan.setSearchIncomplete(search.wasAborted());
+                // DirectionalSearch never aborts, only Search does
+                plan.setSearchIncomplete(!useDirectionalSearch && search.wasAborted());
             }
         }
 
@@ -185,7 +200,7 @@ public class BrainCore {
             : (pickedCar.isIdle() ? 1.0 : pickedCar.getNextDecisionTime() - clockTime);
 
         long t0 = System.nanoTime();
-        List<Stop> result = search.searchBestroute(pickedCarPlan.getRequests(), pickedCar.getDestFloor(), clockTime, budget);
+        List<Stop> result = computeRoute(pickedCarPlan.getRequests(), pickedCar.getDestFloor(), clockTime, budget, pickedCar.getId());
         double elapsedMs = (System.nanoTime() - t0) / 1_000_000.0;
 
         totalSearchMs += elapsedMs;
@@ -195,7 +210,7 @@ public class BrainCore {
 
         boolean late = nextEventTime != null && clockTime + d > nextEventTime;
 
-        if (late || search.wasAborted()) {
+        if (late || (result == null && !useDirectionalSearch)) {
             overdueSearches++;
         }
 
@@ -204,7 +219,8 @@ public class BrainCore {
             pickedCarPlan.setSearchIncomplete(true);
         } else {
             pickedCarPlan.setRoute(new ArrayList<>(result));
-            pickedCarPlan.setSearchIncomplete(search.wasAborted());
+            // DirectionalSearch never aborts, only Search does
+            pickedCarPlan.setSearchIncomplete(!useDirectionalSearch && search.wasAborted());
         }
 
         Double wakeAt = null;
@@ -215,6 +231,17 @@ public class BrainCore {
         }
 
         return new Ack(id, pickedCar.getId(), wakeAt);
+    }
+
+    /**
+     * Common route computation method that selects between Search and DirectionalSearch.
+     */
+    private List<Stop> computeRoute(List<Request> requests, int startFloor, double currentTime, double budget, String carId) {
+        if (useDirectionalSearch) {
+            return directionalSearch.getSuboptimalStops(requests, startFloor, carId);
+        } else {
+            return search.searchBestroute(requests, startFloor, currentTime, budget);
+        }
     }
 
     private CarPlan pickCar(Map<String, CarPlan> carPlans) {
