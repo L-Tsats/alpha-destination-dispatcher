@@ -4,7 +4,7 @@ package dispatcher.devices.elevator;
 
 public class Elevator {
 
-    private int currentFloor;
+    private volatile int currentFloor;   // volatile: written by the elevator's thread, read by others (tests, GUI)
     private String id;
     private ElevatorState currentState;
     
