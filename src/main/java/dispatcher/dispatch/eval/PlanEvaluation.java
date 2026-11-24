@@ -6,9 +6,9 @@ public class PlanEvaluation {
     private final Map<String, Double> pickupWaits;
     private final Map<String, Double> deliveryWaits;
 
-    public PlanEvaluation(Map<String, Double> pickupTimes, Map<String, Double> deliveryTimes) {
-        this.pickupWaits = pickupTimes;
-        this.deliveryWaits = deliveryTimes;
+    public PlanEvaluation(Map<String, Double> pickupWaits, Map<String, Double> deliveryWaits) {
+        this.pickupWaits = pickupWaits;
+        this.deliveryWaits = deliveryWaits;
 
     }
 

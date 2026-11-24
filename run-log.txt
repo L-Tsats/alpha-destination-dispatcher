@@ -1,0 +1,68 @@
+Brain running on port 8080 (10 floors, 2 elevators, MCTS dispatcher, on demo scenario)
+[B] ready at floor 1
+[A] ready at floor 1
+[A] at floor 1, doors open
+Floor 1 -> 7: Submitted! Await elevator: A
+Floor 4 -> 9: Submitted! Await elevator: B
+[B] next floor: 4
+[A] doors closed
+[A] next floor: 7
+Floor 8 -> 2: Submitted! Await elevator: A
+[B] at floor 4, doors open
+[A] at floor 7, doors open
+Floor 1 -> 5: Submitted! Await elevator: B
+[B] doors closed
+[B] next floor: 9
+[A] doors closed
+[A] next floor: 8
+Floor 6 -> 1: Submitted! Await elevator: B
+[B] at floor 9, doors open
+[A] at floor 8, doors open
+Floor 3 -> 10: Submitted! Await elevator: A
+[B] doors closed
+[B] next floor: 6
+[A] doors closed
+[A] next floor: 2
+[B] at floor 6, doors open
+Floor 9 -> 4: Submitted! Await elevator: B
+[A] at floor 2, doors open
+[B] doors closed
+[B] next floor: 1
+Floor 4 -> 8: Submitted! Await elevator: A
+[A] doors closed
+[A] next floor: 3
+[B] at floor 1, doors open
+[A] at floor 3, doors open
+[B] doors closed
+[B] next floor: 5
+[A] doors closed
+[A] next floor: 4
+[A] at floor 4, doors open
+[B] at floor 5, doors open
+[A] doors closed
+[A] next floor: 8
+[B] doors closed
+[B] next floor: 9
+[A] at floor 8, doors open
+[B] at floor 9, doors open
+[A] doors closed
+[A] next floor: 10
+[B] doors closed
+[B] next floor: 4
+[A] at floor 10, doors open
+[A] doors closed
+[B] at floor 4, doors open
+[B] doors closed
+Delivered: 8 of 8
+r-00001  1 -> 7  wait 0,0 s  journey 19,6 s
+r-00002  4 -> 9  wait 7,2 s  journey 25,2 s
+r-00003  8 -> 2  wait 21,1 s  journey 40,5 s
+r-00004  1 -> 5  wait 43,4 s  journey 60,1 s
+r-00005  6 -> 1  wait 16,4 s  journey 34,4 s
+r-00006  3 -> 10  wait 25,8 s  journey 68,7 s
+r-00007  9 -> 4  wait 49,8 s  journey 67,8 s
+r-00008  4 -> 8  wait 17,0 s  journey 33,8 s
+
+MCTS | 10 floors, 2 elevators
+Wait:     mean 22,6 s   max 49,8 s
+Journey:  mean 43,8 s   max 68,7 s

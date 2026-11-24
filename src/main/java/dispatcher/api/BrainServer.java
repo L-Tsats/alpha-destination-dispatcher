@@ -1,9 +1,15 @@
 package dispatcher.api;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.google.gson.Gson;
@@ -15,17 +21,22 @@ import dispatcher.api.dto.AssignmentResponse;
 import dispatcher.api.dto.NextDestinationResponse;
 import dispatcher.api.dto.PassengerRequest;
 import dispatcher.dispatch.brain.BrainCore;
+import dispatcher.dispatch.eval.PlanEvaluation;
 
 public class BrainServer {
     private final HttpServer server;
+    private final ExecutorService executor;
     private final BrainCore brain;
     private final Gson gson = new Gson();
     private final long startNanos = System.nanoTime();
     private long pollTimeoutMs = 25_000;
     private final int nFloors;
+    private final int nCars;
+    private PrintWriter eventLog = null;   // null = no log
 
     public BrainServer(int port, int nFloors, int nCars) throws IOException {
         this.nFloors = nFloors;
+        this.nCars = nCars;
         brain = new BrainCore(nFloors, nCars);
         server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/api/requests", this::handleRequest);
@@ -34,17 +45,66 @@ public class BrainServer {
         // One thread per open request, so a waiting elevator never blocks a keypad request.
         // Plain threads, not virtual ones: on JDK 21 a virtual thread waiting inside
         // synchronized stays pinned to its carrier thread.
-        server.setExecutor(Executors.newCachedThreadPool());
+        executor = Executors.newCachedThreadPool();
+        server.setExecutor(executor);
     }
 
     public void start() { server.start(); }
-    public void stop()  { server.stop(0); }
+
+    public void stop() {
+        server.stop(0);
+        executor.shutdownNow();
+        synchronized (brain) {
+            if (eventLog != null) eventLog.close();
+        }
+    }
+
     public int port()   { return server.getAddress().getPort(); }
 
     // Seconds since the server started: the brain's clock in real-time mode
     private double now() {
         return (System.nanoTime() - startNanos) / 1e9;
     }
+
+    // ---------- settings and results (used by app/Main) ----------
+
+    // true: plan each elevator's stops with DirectionalSearch (LOOK-like); false: tree search
+    public void setDirectionalSearch(boolean directional) {
+        synchronized (brain) {
+            brain.setDirectionalSearch(directional);
+        }
+    }
+
+    // Write every request and every handed-out destination as one JSON line to this file
+    public void setEventLog(Path file) throws IOException {
+        synchronized (brain) {
+            eventLog = new PrintWriter(Files.newBufferedWriter(file, StandardCharsets.UTF_8));
+        }
+    }
+
+    // A copy of the brain's waits and journeys so far (safe to read while elevators run)
+    public PlanEvaluation results() {
+        synchronized (brain) {
+            PlanEvaluation r = brain.result();
+            return new PlanEvaluation(new HashMap<>(r.getPickupWaits()), new HashMap<>(r.getDeliveryWaits()));
+        }
+    }
+
+    // True when every elevator has nothing left to do. An elevator only counts as idle after it
+    // finished its last stop (doors closed) and asked again with an empty route.
+    // Use it once no more requests can arrive: then "all idle" means everyone has been served.
+    public boolean allIdle() {
+        synchronized (brain) {
+            for (int i = 0; i < nCars; i++) {
+                if (!brain.getCar(String.valueOf((char) ('A' + i))).isIdle()) return false;
+            }
+            return true;
+        }
+    }
+
+    public void setPollTimeoutMs(long ms) { this.pollTimeoutMs = ms; }
+
+    // ---------- HTTP handlers ----------
 
     private void handleRequest(HttpExchange exchange) throws IOException {
         if (!exchange.getRequestMethod().equals("POST")) {
@@ -66,7 +126,11 @@ public class BrainServer {
 
         BrainCore.Ack ack;
         synchronized (brain) {
-            ack = brain.submit(req.getFromFloor(), req.getToFloor(), now(), null);
+            double t = now();
+            ack = brain.submit(req.getFromFloor(), req.getToFloor(), t, null);
+            logEvent(t, "request", Map.of(
+                    "requestId", ack.requestId(), "from", req.getFromFloor(),
+                    "to", req.getToFloor(), "elevator", ack.elevatorId()));
             brain.notifyAll();
         }
         AssignmentResponse assignment = new AssignmentResponse(ack.elevatorId());
@@ -114,6 +178,9 @@ public class BrainServer {
                 }
                 nextFloor = brain.nextDestination(elevatorId, now());
             }
+            if (nextFloor != null) {
+                logEvent(now(), "next-destination", Map.of("elevator", elevatorId, "floor", nextFloor));
+            }
         }
 
         if (nextFloor == null) {
@@ -138,6 +205,18 @@ public class BrainServer {
     }
 
     // --- plumbing ---
+
+    // Call only while holding the brain lock (keeps lines in order)
+    private void logEvent(double t, String type, Map<String, Object> fields) {
+        if (eventLog == null) return;
+        Map<String, Object> line = new LinkedHashMap<>();
+        line.put("t", Math.round(t * 1000) / 1000.0);
+        line.put("type", type);
+        line.putAll(fields);
+        eventLog.println(gson.toJson(line));
+        eventLog.flush();
+    }
+
     private String readBody(HttpExchange exchange) throws IOException {
         return new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
     }
@@ -150,7 +229,4 @@ public class BrainServer {
             out.write(bytes);
         }
     }
-
-    public void setPollTimeoutMs(long ms) { this.pollTimeoutMs = ms; }
-
 }
