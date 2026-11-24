@@ -2,7 +2,6 @@
 package dispatcher.app;
 
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Path;
 import java.util.List;
@@ -11,13 +10,15 @@ import java.util.TreeMap;
 import dispatcher.api.BrainServer;
 import dispatcher.devices.elevator.ElevatorController;
 import dispatcher.devices.keypad.KeypadFeeder;
-import dispatcher.sim.traffic.Passenger;
 import dispatcher.dispatch.eval.PlanEvaluation;
 import dispatcher.dispatch.eval.PlanScorer;
+import dispatcher.sim.traffic.Passenger;
+import dispatcher.timing.RunClock;
 
 public class Main {
     // Takes in args [floors, elevators]
     public static void main(String[] args) throws Exception {
+        RunClock.start();   // every log line's "[ x.xx s]" counts from here
         System.setOut(new PrintStream(new FileOutputStream("run-log.txt"), true));
         String url = "http://localhost:8080";
         int floors = args.length >= 2 ? Integer.parseInt(args[0]) : 20;
@@ -32,7 +33,7 @@ public class Main {
         server.setDirectionalSearch(mode.equals("directional"));
         server.setEventLog(Path.of("events.jsonl"));
         server.start();
-        System.out.println("Brain running on port 8080 (" + floors + " floors, " + elevators + " elevators, " + mode + " dispatcher, on " + scenario + " scenario)");
+        System.out.println(RunClock.stamp() + " Brain running on port 8080 (" + floors + " floors, " + elevators + " elevators, " + mode + " dispatcher, on " + scenario + " scenario)");
 
         // --- fire up the elevators ---
         for (int i = 0; i < elevators; i++) {
@@ -81,12 +82,9 @@ public class Main {
         // Passenger(count, fromFloor, toFloor, time in MINUTES, weight)
         List<Passenger> passengers = List.of(
             new Passenger(1, 1, 7, 0.00, 80.0),
-            new Passenger(1, 4, 9, 0.10, 80.0),
             new Passenger(1, 8, 2, 0.20, 80.0),
             new Passenger(1, 1, 5, 0.35, 80.0),   // floor 1 again: may share a stop with the first one
             new Passenger(1, 6, 1, 0.50, 80.0),
-            new Passenger(1, 3, 10, 0.65, 80.0),
-            new Passenger(1, 9, 4, 0.80, 80.0),
             new Passenger(1, 4, 8, 1.00, 80.0));  // floor 4 again
         return passengers;
     }

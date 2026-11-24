@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import dispatcher.sim.traffic.Passenger;
+import dispatcher.timing.RunClock;
 
 // Plays passengers in REAL time: each one presses the keypad on their floor at their time
 public class KeypadFeeder {
@@ -36,7 +37,7 @@ public class KeypadFeeder {
             Keypad keypad = keypads.get(p.getFromFloor());
             keypad.press(p.getToFloor());
             // TODO 4: print the floor, the destination and what the screen shows
-            System.out.println("Floor " + p.getFromFloor() + " -> " + p.getToFloor() + ": " + keypad.getScreen());
+            System.out.println(RunClock.stamp() + " Floor " + p.getFromFloor() + " -> " + p.getToFloor() + ": " + keypad.getScreen());
         }
     }
 

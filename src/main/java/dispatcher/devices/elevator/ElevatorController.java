@@ -5,6 +5,7 @@ import java.io.IOException;
 import dispatcher.api.BrainApiClient;
 import dispatcher.api.dto.NextDestinationResponse;
 import dispatcher.timing.Dwell;
+import dispatcher.timing.RunClock;
 import dispatcher.timing.TravelModel;
 
 // One elevator. It runs on its own thread: ask the brain where to go, go there, ask again.
@@ -80,6 +81,6 @@ public class ElevatorController implements Runnable {
 
     // Every line starts with the elevator's id, so several elevators in one console stay readable
     private void log(String message) {
-        System.out.println("[" + elevator.getId() + "] " + message);
+        System.out.println(RunClock.stamp() + " [" + elevator.getId() + "] " + message);
     }
 }
